@@ -43,6 +43,7 @@ All the commands are listed below.
 | `passwd` | Change password |
 | `query` | Search for books |
 | `buy` | Purchase books |
+| `bookadd` | Add a new book |
 | `modify` | Modify book information |
 | `import` | Import books |
 | `log` | Show logs |
@@ -98,6 +99,13 @@ Format: `buy [ISBN] [Quantity]`
 Output: none
 
 Purchase books.
+
+### `bookadd`
+Format: `bookadd [ISBN] [Name] [Author] [Keyword] [Price]`
+
+Output: none
+
+Add a new book.
 
 ### `modify`
 Format: `modify (-ISBN=[ISBN] | -name="[BookName]" | -author="[Author]" | -keyword="[Keyword]" | -price=[Price])`
