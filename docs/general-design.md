@@ -29,7 +29,7 @@ The business logic is responsible for the business logic. It handles the user re
 The command line interface is responsible for user interaction. It handles the user input and output.
 
 The following figure shows the overall design of the system.
-![Overall design](images/%2F%B9%A6%C4%DC%BD%E1%B9%B9%CD%BC.png)
+![Overall design](images/功能结构图.png)
 
 ## 用户交互设计
 All the commands are listed below.
