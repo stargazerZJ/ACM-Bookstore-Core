@@ -1,6 +1,36 @@
 # General Design
 ## 功能设计
-TODO
+The system provides the following functions:
+- User management
+- Book management
+- Book purchase
+- Book import
+- Log management
+
+There are 5 components in the system: the database, the login system, the book system, the business logic and the command line interface.
+
+The database stores the information of the users, the books and the logs.
+
+The login system is responsible for user management. It provides the following functions:
+- User login
+- User logout
+- User registration
+- User password change
+- User creation
+
+The book system is responsible for book management. It provides the following functions:
+- Book search
+- Book purchase
+- Book information modification
+- Book import
+
+The business logic is responsible for the business logic. It handles the user requests and interacts with the database. It also checks the permissions of the users.
+
+The command line interface is responsible for user interaction. It handles the user input and output.
+
+The following figure shows the overall design of the system.
+![Overall design](images/%2F%B9%A6%C4%DC%BD%E1%B9%B9%CD%BC.png)
+
 ## 用户交互设计
 All the commands are listed below.
 
