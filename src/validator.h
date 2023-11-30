@@ -1,0 +1,8 @@
+//
+// Created by zj on 11/30/2023.
+//
+
+#ifndef BOOKSTORE_SRC_VALIDATOR_H_
+#define BOOKSTORE_SRC_VALIDATOR_H_
+
+#endif //BOOKSTORE_SRC_VALIDATOR_H_
