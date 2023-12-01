@@ -13,7 +13,7 @@ class ExternalHashMap {
  private:
   unsigned int size_;
   unsigned int map_size_;
-  ExternalMemory<Key, 2> hash_map_;
+  ListHelper<Key, 2> hash_map_;
   static constexpr unsigned int size_of_Key_ = sizeof(Key);
 
   bool need_rehash() const;

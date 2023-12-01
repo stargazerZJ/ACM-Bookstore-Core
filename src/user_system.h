@@ -32,7 +32,7 @@ struct User {
 class UserSystem {
  private:
   const std::string file_prefix_;
-  external_memory::ExternalList<User> user_list_;
+  external_memory::List<User> user_list_;
   external_memory::ExternalHashMap<Username_t> user_id_to_id_;
   std::vector<User> login_stack_;
 

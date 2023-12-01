@@ -11,16 +11,16 @@
 
 namespace external_memory {
 template<class T, unsigned info_len>
-class ExternalMemory {
+class ListHelper {
  private:
   std::string file_name_;
   static constexpr unsigned int size_of_T_ = sizeof(T);
   static constexpr unsigned int size_of_info_ = info_len * sizeof(unsigned int);
  public:
   std::fstream file_;
-  explicit ExternalMemory(const std::string &file_name);
+  explicit ListHelper(const std::string &file_name);
 
-  ~ExternalMemory();
+  ~ListHelper();
 
   void initialize(const std::string &file_name);
 
@@ -33,16 +33,16 @@ class ExternalMemory {
   void write(unsigned n, const T &value);
 };
 template<class T>
-class ExternalList {
+class List {
  private:
   unsigned int size_;
   static constexpr unsigned int byte_size_ = T::byte_size();
   using bytes = char[byte_size_];
-  ExternalMemory<bytes, 1> list_;
+  ListHelper<bytes, 1> list_;
  public:
-  explicit ExternalList(const std::string &file_name);
+  explicit List(const std::string &file_name);
 
-  ~ExternalList();
+  ~List();
 
   void initialize(const std::string &file_name);
 
@@ -56,44 +56,6 @@ class ExternalList {
 
   unsigned insert(const T &value);
 };
-class ExternalAllocator {
- private:
-  static constexpr char file_name_[] = "external_allocator";
- public:
-  ExternalAllocator();
-
-  ~ExternalAllocator();
-
-  void initialize();
-
-  unsigned int allocate(int size);
-
-  void deallocate(unsigned int n, int size);
-};
-class ExternalVector {
- private:
-  static ExternalAllocator allocator_;
-  unsigned pos_;
-  std::vector<unsigned int> data_;
- public:
-  ExternalVector();
-
-  explicit ExternalVector(unsigned pos);
-
-  std::vector<unsigned int> &get_data();
-
-  bool commit(); // return true if pos_ is changed
-};
 }
-
-//template<class T, unsigned info_len>
-//class ExternalMemory;
-//
-//template<class T>
-//class ExternalList;
-//
-//class ExternalAllocator; // element is unsigned int
-//
-//class ExternalVector; // element is unsigned int
 
 #endif //BOOKSTORE_SRC_EXTERNAL_MEMORY_H_

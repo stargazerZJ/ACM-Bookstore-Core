@@ -36,7 +36,7 @@ struct Book {
 class BookSystem {
  private:
   const std::string file_prefix_;
-  external_memory::ExternalList<Book> book_list_;
+  external_memory::List<Book> book_list_;
   external_memory::ExternalHashMap<ISBN_t> ISBN_to_id_;
   external_memory::ExternalHashMultiMap<Title_t> title_to_id_;
   external_memory::ExternalHashMultiMap<Title_t> author_to_id_;

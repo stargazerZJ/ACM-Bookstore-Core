@@ -12,6 +12,7 @@
 class BookStore {
  private:
   const std::string file_path_;
+  //TODO: define Vectors class here and pass it to BookSystem and UserSystem
   BookSystem book_system_;
   UserSystem user_system_;
   FinanceLog finance_log_;
