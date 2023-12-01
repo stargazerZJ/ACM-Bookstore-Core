@@ -9,16 +9,7 @@
 #include <vector>
 #include <fstream>
 
-template<class T, unsigned info_len>
-class ExternalMemory;
-
-template<class T>
-class ExternalList;
-
-class ExternalAllocator; // element is unsigned int
-
-class ExternalVector; // element is unsigned int
-
+namespace external_memory {
 template<class T, unsigned info_len>
 class ExternalMemory {
  private:
@@ -41,7 +32,6 @@ class ExternalMemory {
 
   void write(unsigned n, const T &value);
 };
-
 template<class T>
 class ExternalList {
  private:
@@ -66,7 +56,6 @@ class ExternalList {
 
   unsigned insert(const T &value);
 };
-
 class ExternalAllocator {
  private:
   static constexpr char file_name_[] = "external_allocator";
@@ -81,7 +70,6 @@ class ExternalAllocator {
 
   void deallocate(unsigned int n, int size);
 };
-
 class ExternalVector {
  private:
   static ExternalAllocator allocator_;
@@ -96,5 +84,16 @@ class ExternalVector {
 
   bool commit(); // return true if pos_ is changed
 };
+}
+
+//template<class T, unsigned info_len>
+//class ExternalMemory;
+//
+//template<class T>
+//class ExternalList;
+//
+//class ExternalAllocator; // element is unsigned int
+//
+//class ExternalVector; // element is unsigned int
 
 #endif //BOOKSTORE_SRC_EXTERNAL_MEMORY_H_

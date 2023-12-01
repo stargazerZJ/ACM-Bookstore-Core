@@ -7,6 +7,7 @@
 
 #include "external_memory.h"
 
+namespace external_memory {
 template<class Key> // the value is unsigned int
 class ExternalHashMap {
  private:
@@ -36,27 +37,27 @@ class ExternalHashMap {
 
   unsigned int map_size() const;
 };
-
 template<class Key>
 class ExternalHashMultiMap {
  private:
   ExternalHashMap<Key> vector_pos_;
  public:
-    explicit ExternalHashMultiMap(const std::string &file_name);
+  explicit ExternalHashMultiMap(const std::string &file_name);
 
-    ~ExternalHashMultiMap();
+  ~ExternalHashMultiMap();
 
-    void initialize(const std::string &file_name);
+  void initialize(const std::string &file_name);
 
-    void insert(const Key &key, unsigned int value);
+  void insert(const Key &key, unsigned int value);
 
-    void erase(const Key &key, unsigned int value);
+  void erase(const Key &key, unsigned int value);
 
-    std::vector<unsigned int> findAll(const Key &key) const;
+  std::vector<unsigned int> findAll(const Key &key) const;
 
-    unsigned int size() const;
+  unsigned int size() const;
 
-    unsigned int map_size() const;
+  unsigned int map_size() const;
 };
+}
 
 #endif //BOOKSTORE_SRC_EXTERNAL_HASH_MAP_H_
