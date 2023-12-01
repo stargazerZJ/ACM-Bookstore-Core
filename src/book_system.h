@@ -42,11 +42,11 @@ class BookSystem {
   ExternalHashMultiMap<Title_t> author_to_id_;
   ExternalHashMultiMap<Title_t> keyword_to_id_;
  public:
-  BookSystem(std::string file_prefix);
+  BookSystem(std::string file_prefix = "");
 
   ~BookSystem();
 
-  void initialize();
+  void initialize(bool reset = false);
 
   unsigned int find(const std::string &ISBN) const;
 

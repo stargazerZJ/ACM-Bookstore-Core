@@ -15,7 +15,7 @@ class BookStoreCLI {
 
   ~BookStoreCLI() = default;
 
-  bool initialize();
+  bool initialize(bool force_reset = false);
 
   bool run();
 };

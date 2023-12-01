@@ -11,17 +11,17 @@
 
 class BookStore {
  private:
-  const std::string file_path;
+  const std::string file_path_;
   BookSystem book_system_;
   UserSystem user_system_;
   FinanceLog finance_log_;
   UserLog user_log_;
  public:
-  BookStore();
+  BookStore(std::string file_path = "");
 
   ~BookStore();
 
-  void initialize();
+  void initialize(bool force_reset = false);
 
   bool login(const std::string &user_id, const std::string &password = "") const;
 

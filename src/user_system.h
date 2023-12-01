@@ -43,11 +43,11 @@ class UserSystem {
   const User &current_user() const;
 
  public:
-  UserSystem(std::string file_prefix);
+  UserSystem(std::string file_prefix = "");
 
   ~UserSystem();
 
-  void initialize();
+  void initialize(bool reset = false);
 
   //TODO: change the return type to Exception
 
