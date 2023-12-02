@@ -60,7 +60,7 @@ void Array::cache() {
     cached_ = true;
   }
 }
-void Array::uncache() {
+void Array::flush() {
   if (cached_) {
     file_.close();
     file_.open(file_name_, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
@@ -99,7 +99,7 @@ void Array::halve_size() {
 }
 Array::~Array() {
   if (cached_) {
-    uncache();
+    flush();
   }
   file_.close();
 }

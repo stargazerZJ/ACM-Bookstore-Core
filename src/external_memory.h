@@ -57,24 +57,101 @@ class List {
 
   unsigned insert(const T &value);
 };
+/**
+ * @brief A class for storing a list of integers in external memory.
+ *
+ * @details
+ * The list is stored in a file, whose name (and path) is specified in the constructor.
+ *
+ * `initialize` must be called before using the list.
+ *
+ * @attention The list is 0-indexed.
+ * @attention No bounds checking is performed.
+ */
 class Array {
  private:
-  unsigned int size_;
-  const std::string file_name_;
-  std::fstream file_;
-  bool cached_;
-  std::vector<int> cache_;
+  unsigned int size_; // number of elements
+  const std::string file_name_; // name (and path) of the file
+  std::fstream file_; // the file
+  bool cached_; // whether the whole list is cached
+  std::vector<int> cache_; // the cache
  public:
+  /**
+   * @brief Construct a new Array object.
+   *
+   * @param name The name (and path) of the file.
+   */
   explicit Array(std::string name = "") : size_(0), file_name_(std::move(name) + ".db"), cached_() {}
+  /**
+   * @brief Destroy the Array object.
+   *
+   * @details
+   * The destructor closes the file.
+   * If the list is cached, the cache is written back to the file.
+   */
   ~Array();
+  /**
+   * @brief Initialize the list.
+   *
+   * @details
+   * When `reset` is `true`, the file is truncated.
+   * Otherwise, the file is opened.
+   *
+   * @param reset Whether to reset the file.
+   */
   void initialize(bool reset = false);
+  /**
+   * @brief Get the size of the list.
+   *
+   * @return unsigned int The size of the list.
+   */
   unsigned int size() const;
+  /**
+   * @brief Get the value of the n-th element (0-based).
+   *
+   * @param n The index of the element, 0-based.
+   * @return int The value of the n-th element (0-based).
+   */
   int get(unsigned int n);
+  /**
+   * @brief Set the value of the n-th element (0-based).
+   *
+   * @param n The index of the element, 0-based.
+   * @param value The value to be set.
+   */
   void set(unsigned int n, int value);
+  /**
+   * @brief Append a new element to the list.
+   *
+   * @param value The value to be appended.
+   * @return unsigned int The index of the new element.
+   */
   unsigned int push_back(int value);
+  /**
+   * @brief Cache the whole list.
+   *
+   * @details
+   * The whole list is read into the cache.
+   * Subsequent operations will be performed on the cache.
+   */
   void cache();
-  void uncache();
+  /**
+   * @brief Write the cache back to the file.
+   *
+   * @details
+   * The whole list is written back to the file.
+   * Subsequent operations will be performed on the file.
+   */
+  void flush();
+  /**
+   * @brief Append a copy of the list to the end of the file, doubling the size of the file.
+   *
+   */
   void double_size();
+  /**
+   * @brief Halve the size of the file.
+   *
+   */
   void halve_size();
 };
 
