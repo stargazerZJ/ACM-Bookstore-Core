@@ -36,7 +36,11 @@ Vectors::Vector Vectors::getVector(unsigned int pos) {
   if (!pos) {
     return Vector(*this);
   }
-  return Vector(*this, pos);
+  auto ret = Vector(*this, pos);
+  if (ret.capacity() <= kIntegerPerPage) {
+    data_.fetchPage(ret.page_id_);
+  }
+  return ret;
 }
 Vectors::Vector Vectors::newVector() {
   return Vector(*this);
@@ -109,7 +113,7 @@ void Vectors::deallocate(unsigned int n, unsigned int offset, unsigned int capac
       if (offset == 0) {
         deletePage(page);
         free_pages_of_capacity_[__builtin_ctz(capacity)].erase(page);
-        return ;
+        return;
       }
     } else {
       setPageInfo(kPageInfo::kFreeHead, page, offset);
@@ -146,7 +150,7 @@ std::vector<int> Vectors::Vector::getData() {
   return ret;
 }
 unsigned int Vectors::Vector::capacity() const {
-  return page_id_ ? vectors_.getPageInfo(kPageInfo::kCapacity, page_id_) : 0;
+  return pos_ ? vectors_.getPageInfo(kPageInfo::kCapacity, page_id_) : 0;
 }
 bool Vectors::Vector::push_back(int value) {
   unsigned capacity = this->capacity();
@@ -192,6 +196,10 @@ unsigned int Vectors::Vector::appendPage() {
   return new_page;
 }
 bool Vectors::Vector::rewrite(std::vector<int> &data) {
+  if (data.empty()) {
+    del();
+    return true;
+  }
   unsigned capacity = this->capacity();
   bool ret = false;
   if (capacity < kIntegerPerPage) {
@@ -218,7 +226,7 @@ bool Vectors::Vector::rewrite(std::vector<int> &data) {
   data.resize((data.size() + kIntegerPerPage - 1) / kIntegerPerPage * kIntegerPerPage);
   int *data_ptr = data.data();
   unsigned page = page_id_;
-  unsigned last_page = page_id_;
+  unsigned last_page = 0;
   for (unsigned filled = 0; filled < data.size(); filled += kIntegerPerPage) {
     last_page = page;
     vectors_.data_.setPage(page, data_ptr);
@@ -238,6 +246,9 @@ void Vectors::Vector::updatePos(unsigned int new_pos) {
   std::tie(page_id_, offset_) = external_memory::Pages::toPageOffset(pos_);
 }
 void Vectors::Vector::discardAfter(unsigned int last_page) {
+  if (!last_page) {
+    return;
+  }
   unsigned page = vectors_.getPageInfo(kPageInfo::kNextPage, last_page);
   vectors_.setPageInfo(kPageInfo::kNextPage, last_page, 0);
   vectors_.setPageInfo(kPageInfo::kLastPage, page_id_, last_page);
@@ -246,5 +257,19 @@ void Vectors::Vector::discardAfter(unsigned int last_page) {
     vectors_.deletePage(page);
     page = next_page;
   }
+}
+bool Vectors::Vector::del() {
+  if (!pos_) {
+    return false;
+  }
+  unsigned capacity = this->capacity();
+  if (capacity < kIntegerPerPage) {
+    vectors_.deallocate(page_id_, offset_, capacity);
+  } else {
+    discardAfter(page_id_);
+    vectors_.deletePage(page_id_);
+  }
+  updatePos(0);
+  return true;
 }
 }
