@@ -11,6 +11,7 @@
 #include <filesystem>
 
 namespace external_memory {
+constexpr char kFileExtension[] = ".db";
 template<class T, unsigned info_len>
 class ListHelper {
  private:
@@ -81,7 +82,7 @@ class Array {
    *
    * @param name The name (and path) of the file.
    */
-  explicit Array(std::string name = "") : size_(0), file_name_(std::move(name) + ".db"), cached_() {}
+  explicit Array(std::string name = "") : size_(0), file_name_(std::move(name) + kFileExtension), cached_() {}
   /**
    * @brief Destroy the Array object.
    *
