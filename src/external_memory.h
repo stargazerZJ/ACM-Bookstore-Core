@@ -282,8 +282,8 @@ class Pages {
    * @brief Get a part of the n-th page, 1-based.
    *
    * @param n The index of the page, 1-based.
-   * @param offset The offset of the part, 0-based, in integers, must be smaller than `kIntegerPerPage`.
-   * @param len The length of the part, the number of integers, must be smaller than `kIntegerPerPage - offset`.
+   * @param offset The offset of the part, 0-based, in integers.
+   * @param len The length of the part, the number of integers.
    * @param dest The destination.
    *
    * @attention Must read within the n-th page.
@@ -294,8 +294,8 @@ class Pages {
    * @brief Set a part of the n-th page, 1-based.
    *
    * @param n The index of the page, 1-based.
-   * @param offset The offset of the part, 0-based, in integers, must be smaller than `kIntegerPerPage`.
-   * @param len The length of the part, the number of integers, must be smaller than `kIntegerPerPage - offset`.
+   * @param offset The offset of the part, 0-based, in integers.
+   * @param len The length of the part, the number of integers.
    * @param value The value to be set.
    *
    * @attention Must write within the n-th page.
