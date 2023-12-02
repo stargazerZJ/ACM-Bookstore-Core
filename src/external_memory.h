@@ -9,9 +9,11 @@
 #include <vector>
 #include <fstream>
 #include <filesystem>
+#include <cstring>
 
 namespace external_memory {
 constexpr char kFileExtension[] = ".db";
+constexpr unsigned int kPageSize = 4096;
 template<class T, unsigned info_len>
 class ListHelper {
  private:
@@ -67,7 +69,7 @@ class List {
  * `initialize` must be called before using the list.
  *
  * @attention The list is 0-indexed.
- * @attention No bounds checking is performed.
+ * @attention No bound checking is performed.
  */
 class Array {
  private:
@@ -83,6 +85,8 @@ class Array {
    * @param name The name (and path) of the file.
    */
   explicit Array(std::string name = "") : size_(0), file_name_(std::move(name) + kFileExtension), cached_() {}
+  Array(const Array &) = delete;
+  Array &operator=(const Array &) = delete;
   /**
    * @brief Destroy the Array object.
    *
@@ -99,6 +103,9 @@ class Array {
    * Otherwise, the file is opened.
    *
    * @param reset Whether to reset the file.
+   *
+   * @attention `initialize` must be called before using the list.
+   * @attention `initialize` must not be called twice.
    */
   void initialize(bool reset = false);
   /**
@@ -154,6 +161,181 @@ class Array {
    *
    */
   void halve_size();
+};
+/**
+ * @brief A class for storing pages of integers in external memory.
+ *
+ * @details
+ * The pages are stored in a file, whose name (and path) is specified in the constructor.
+ *
+ * The first page is used to store information about the pages. This page is referred to as the info page.
+ *
+ * `initialize` must be called before using the pages.
+ *
+ * @attention The pages are 1-indexed.
+ * @attention The info page is 1-indexed.
+ * @attention The first integer of the info page is reserved for storing the head of the free pages.
+ * @attention No bound checking is performed.
+ *
+ * @note The info page is implicitly cached.
+ */
+class Pages {
+ private:
+  static constexpr unsigned int kIntegerPerPage = kPageSize / sizeof(int); // number of integers in a page
+  using Page = int[kIntegerPerPage]; // a page
+  unsigned int size_; // number of pages
+  const std::string file_name_; // name (and path) of the file
+  std::fstream file_; // the file
+  unsigned int cache_index_; // the index of the cached page
+  Page cache_; // the cache
+  Page info_; // the info page
+  int &free_head_ = info_[0]; // the head of the free pages
+ public:
+  /**
+   * @brief Construct a new Pages object.
+   *
+   * @param name The name (and path) of the file.
+   */
+  explicit Pages(std::string name = "")
+      : size_(), file_name_(std::move(name) + kFileExtension), cache_index_(), cache_(), info_() {}
+  Pages(const Pages &) = delete;
+  Pages &operator=(const Pages &) = delete;
+  /**
+   * @brief Destroy the Pages object.
+   *
+   * @details
+   * The destructor closes the file.
+   * If the cache is not empty, the cache is written back to the file.
+   */
+  ~Pages();
+  /**
+   * @brief Initialize the pages.
+   *
+   * @details
+   * When `reset` is `true`, the file is truncated.
+   * Otherwise, the file is opened.
+   *
+   * @param reset Whether to reset the file.
+   *
+   * @attention `initialize` must be called before using the pages.
+   * @attention `initialize` must not be called twice.
+   */
+  void initialize(bool reset = false);
+  /**
+   * @brief Flush the info page cache.
+   */
+  void flushInfo();
+  /**
+   * @brief Get the size of the pages, not including the info page.
+   *
+   * @return unsigned int The size of the pages, not including the info page.
+   */
+  unsigned int size() const;
+  /**
+   * @brief Get the i-th info.
+   *
+   * @param i The index of the info, 1-based.
+   * @param dest The destination.
+   */
+  void getInfo(unsigned int n, int &dest);
+  /**
+   * @brief Set the i-th info.
+   *
+   * @param i The index of the info, 1-based.
+   * @param value The value to be set.
+   *
+   * @attention No bound checking is performed.
+   */
+  void setInfo(unsigned int n, int value);
+  /**
+   * @brief Fetch the n-th page into the cache.
+   *
+   * @param n The index of the page, 1-based.
+   * @param reset Whether to reset page content into 0.
+   *
+   * @attention No bound checking is performed.
+   */
+  void fetchPage(unsigned int n, bool reset);
+  /**
+   * @brief Flush the page cache back to the file.
+   */
+  void flush();
+  /**
+   * @brief Get the n-th page, 1-based.
+   *
+   * @param n The index of the page, 1-based.
+   * @param dest The destination.
+   *
+   * @attention No bound checking is performed.
+   */
+  void getPage(unsigned n, int *dest);
+  /**
+   * @brief Set the n-th page, 1-based.
+   *
+   * @param n The index of the page, 1-based.
+   * @param value The value to be set.
+   *
+   * @attention No bound checking is performed.
+   */
+  void setPage(unsigned n, const int *value);
+  /**
+   * @brief Get a part of the n-th page, 1-based.
+   *
+   * @param n The index of the page, 1-based.
+   * @param offset The offset of the part, 0-based, in integers, must be smaller than `kIntegerPerPage`.
+   * @param len The length of the part, the number of integers, must be smaller than `kIntegerPerPage - offset`.
+   * @param dest The destination.
+   *
+   * @attention Must read within the n-th page.
+   * @attention No bound checking is performed.
+   */
+  void getPart(unsigned n, unsigned offset, unsigned len, int *dest);
+  /**
+   * @brief Set a part of the n-th page, 1-based.
+   *
+   * @param n The index of the page, 1-based.
+   * @param offset The offset of the part, 0-based, in integers, must be smaller than `kIntegerPerPage`.
+   * @param len The length of the part, the number of integers, must be smaller than `kIntegerPerPage - offset`.
+   * @param value The value to be set.
+   *
+   * @attention Must write within the n-th page.
+   * @attention No bound checking is performed.
+   */
+  void setPart(unsigned n, unsigned offset, unsigned len, const int *value);
+  /**
+   * @brief Convert the page number and the offset to an absolute position.
+   *
+   * @param n The index of the page, 1-based.
+   * @param offset The offset of the integer, 0-based, in integers, must be smaller than `kIntegerPerPage`.
+   * @return unsigned int The absolute position.
+   */
+  static inline unsigned int toPosition(unsigned n, unsigned offset);
+  /**
+   * @brief Convert the absolute position to the page number and the offset.
+   *
+   * @param position The absolute position.
+   * @return std::pair<unsigned, unsigned> The page number and the offset.
+   */
+  static inline std::pair<unsigned, unsigned> toPageOffset(unsigned position);
+  /**
+   * @brief Allocate a new page.
+   *
+   * @param value The value to be set.
+   * @return unsigned int The index of the new page, 1-based.
+   *
+   * @note The new page is fetched into the cache.
+   */
+  unsigned int newPage(const int *value = nullptr);
+  /**
+   * @brief Deallocate a page.
+   *
+   * @param n The index of the page, 1-based.
+   *
+   * @note The page is not actually erased.
+   * @note An integer is written to the beginning of the page to indicate the next free page.
+   * @note The rest of the page is not modified.
+   */
+  void deletePage(unsigned int n);
 };
 
 }
