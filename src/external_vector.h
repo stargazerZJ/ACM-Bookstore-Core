@@ -10,9 +10,9 @@
 #include <string>
 class Vectors {
  private:
-  char file_name_[];
+  const std::string file_name_;
  public:
-  Vectors(std::string file_name = "vectors");
+  Vectors(std::string name = "vectors");
 
   ~Vectors();
 

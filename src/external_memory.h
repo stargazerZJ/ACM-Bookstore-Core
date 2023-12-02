@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <filesystem>
 
 namespace external_memory {
 template<class T, unsigned info_len>
@@ -56,6 +57,27 @@ class List {
 
   unsigned insert(const T &value);
 };
+class Array {
+ private:
+  unsigned int size_;
+  const std::string file_name_;
+  std::fstream file_;
+  bool cached_;
+  std::vector<int> cache_;
+ public:
+  explicit Array(std::string name = "") : size_(0), file_name_(std::move(name) + ".db"), cached_() {}
+  ~Array();
+  void initialize(bool reset = false);
+  unsigned int size() const;
+  int get(unsigned int n);
+  void set(unsigned int n, int value);
+  unsigned int push_back(int value);
+  void cache();
+  void uncache();
+  void double_size();
+  void halve_size();
+};
+
 }
 
 #endif //BOOKSTORE_SRC_EXTERNAL_MEMORY_H_
