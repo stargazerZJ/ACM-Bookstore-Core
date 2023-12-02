@@ -14,6 +14,8 @@
 namespace external_memory {
 constexpr char kFileExtension[] = ".db";
 constexpr unsigned int kPageSize = 4096;
+static constexpr unsigned int kIntegerPerPage = kPageSize / sizeof(int); // number of integers in a page
+using Page = int[kIntegerPerPage]; // a page
 template<class T, unsigned info_len>
 class ListHelper {
  private:
@@ -181,8 +183,6 @@ class Array {
  */
 class Pages {
  private:
-  static constexpr unsigned int kIntegerPerPage = kPageSize / sizeof(int); // number of integers in a page
-  using Page = int[kIntegerPerPage]; // a page
   unsigned int size_; // number of pages
   const std::string file_name_; // name (and path) of the file
   std::fstream file_; // the file
@@ -255,7 +255,7 @@ class Pages {
    *
    * @attention No bound checking is performed.
    */
-  void fetchPage(unsigned int n, bool reset);
+  void fetchPage(unsigned int n, bool reset = false);
   /**
    * @brief Flush the page cache back to the file.
    */
@@ -323,7 +323,7 @@ class Pages {
    * @param value The value to be set.
    * @return unsigned int The index of the new page, 1-based.
    *
-   * @note The new page is fetched into the cache.
+   * @note The new page is cleared and fetched into the cache.
    */
   unsigned int newPage(const int *value = nullptr);
   /**
