@@ -200,8 +200,7 @@ unsigned int Vectors::Vector::appendPage() {
 }
 bool Vectors::Vector::rewrite(std::vector<int> &data) {
   if (data.empty()) {
-    del();
-    return true;
+    return del();
   }
   unsigned capacity = this->capacity();
   bool ret = false;
