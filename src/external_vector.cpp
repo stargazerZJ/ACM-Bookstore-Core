@@ -79,6 +79,9 @@ unsigned int Vectors::allocate(unsigned int capacity) {
       data_.getPart(page, free_head, 1, &new_free_head);
       setPageInfo(kPageInfo::kFreeHead, page, new_free_head);
       clearSpace(capacity, page, free_head);
+      if (new_free_head == -1 && unoccupied_beg == kIntegerPerPage) {
+        free_pages_of_capacity_[__builtin_ctz(capacity)].erase(page);
+      }
       return external_memory::Pages::toPosition(page, free_head);
     } else {
       setPageInfo(kPageInfo::kUnoccupiedBeg, page, unoccupied_beg + capacity);
