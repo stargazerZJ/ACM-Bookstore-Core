@@ -235,7 +235,16 @@ class Pages {
    * @brief Get the i-th info.
    *
    * @param i The index of the info, 1-based.
+   * @return int The i-th info.
+   * @attention No bound checking is performed.
+   */
+  int &getInfo(unsigned int n);
+  /**
+   * @brief Get the i-th info.
+   *
+   * @param i The index of the info, 1-based.
    * @param dest The destination.
+   * @attention No bound checking is performed.
    */
   void getInfo(unsigned int n, int &dest);
   /**
