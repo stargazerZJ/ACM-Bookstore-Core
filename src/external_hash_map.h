@@ -9,7 +9,7 @@
 
 namespace external_memory {
 template<class Key> // the value is unsigned int
-class ExternalHashMap {
+class Map {
  private:
   unsigned int size_;
   unsigned int map_size_;
@@ -21,9 +21,9 @@ class ExternalHashMap {
   void rehash();
 
  public:
-  explicit ExternalHashMap(const std::string &file_name);
+  explicit Map(const std::string &file_name);
 
-  ~ExternalHashMap();
+  ~Map();
 
   void initialize(const std::string &file_name);
 
@@ -38,13 +38,13 @@ class ExternalHashMap {
   unsigned int map_size() const;
 };
 template<class Key>
-class ExternalHashMultiMap {
+class MultiMap {
  private:
-  ExternalHashMap<Key> vector_pos_;
+  Map<Key> vector_pos_;
  public:
-  explicit ExternalHashMultiMap(const std::string &file_name);
+  explicit MultiMap(const std::string &file_name);
 
-  ~ExternalHashMultiMap();
+  ~MultiMap();
 
   void initialize(const std::string &file_name);
 
