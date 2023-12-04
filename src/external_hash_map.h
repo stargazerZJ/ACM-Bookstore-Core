@@ -8,6 +8,11 @@
 #include "external_memory.h"
 
 namespace external_memory {
+class Hash {
+  using Hash_t = unsigned long long;
+  static Hash_t splitmix64(Hash_t x);
+  Hash_t operator()(const std::string &str) ;
+};
 template<class Key> // the value is unsigned int
 class Map {
  private:
