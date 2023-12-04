@@ -11,8 +11,8 @@ void Vectors::initialize(bool reset) {
   for (unsigned int i = 1; i <= info_.size() / kInfoPerPage; ++i) {
     int capacity = getPageInfo(kPageInfo::kCapacity, i);
     if (capacity > 0 && capacity < kIntegerPerPage) {
-      int unoccupied = getPageInfo(kPageInfo::kUnoccupiedBeg, i);
-      if (unoccupied != kIntegerPerPage) {
+      int unoccupied_beg = getPageInfo(kPageInfo::kUnoccupiedBeg, i);
+      if (unoccupied_beg != kIntegerPerPage) {
         unsigned int capacity_log = __builtin_ctz(capacity);
         auto &tmp = free_pages_of_capacity_[capacity_log];
         tmp.insert(tmp.end(), i);
