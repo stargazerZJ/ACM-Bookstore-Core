@@ -13,6 +13,7 @@ class Map {
  private:
   unsigned int size_;
   unsigned int map_size_;
+  Pages data_;
   ListHelper<Key, 2> hash_map_;
   static constexpr unsigned int size_of_Key_ = sizeof(Key);
 
