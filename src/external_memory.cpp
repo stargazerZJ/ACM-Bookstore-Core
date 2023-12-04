@@ -226,4 +226,7 @@ void Pages::flushInfo() {
 void Pages::setInfo(unsigned int n, int value) {
   info_[n] = value;
 }
+int &Pages::getInfo(unsigned int n) {
+  return info_[n];
+}
 }
