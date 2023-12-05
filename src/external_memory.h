@@ -86,7 +86,7 @@ class Array {
    *
    * @param name The name (and path) of the file.
    */
-  explicit Array(std::string name = "") : size_(0), file_name_(std::move(name) + kFileExtension), cached_() {}
+  explicit Array(std::string name = "array") : size_(0), file_name_(std::move(name) + kFileExtension), cached_() {}
   Array(const Array &) = delete;
   Array &operator=(const Array &) = delete;
   /**
@@ -196,7 +196,7 @@ class Pages {
    *
    * @param name The name (and path) of the file.
    */
-  explicit Pages(std::string name = "")
+  explicit Pages(std::string name = "pages")
       : size_(), file_name_(std::move(name) + kFileExtension), cache_index_(), cache_(), info_() {}
   Pages(const Pages &) = delete;
   Pages &operator=(const Pages &) = delete;
