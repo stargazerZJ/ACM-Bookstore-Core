@@ -318,14 +318,14 @@ class Pages {
    * @param offset The offset of the integer, 0-based, in integers, must be smaller than `kIntegerPerPage`.
    * @return unsigned int The absolute position.
    */
-  static inline unsigned int toPosition(unsigned n, unsigned offset);
+   static unsigned int toPosition(unsigned n, unsigned offset);
   /**
    * @brief Convert the absolute position to the page number and the offset.
    *
    * @param position The absolute position.
    * @return std::pair<unsigned, unsigned> The page number and the offset.
    */
-  static inline std::pair<unsigned, unsigned> toPageOffset(unsigned position);
+  static std::pair<unsigned, unsigned> toPageOffset(unsigned position);
   /**
    * @brief Allocate a new page.
    *
