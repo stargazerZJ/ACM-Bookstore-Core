@@ -123,4 +123,8 @@ bool Map<Key>::Bucket::empty() const {
 }
 template
 class Map<std::string>;
+template<class Key>
+unsigned int &Map<Key>::Bucket::operator[](const Hash_t &key) {
+  return data[key];
+}
 }

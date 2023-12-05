@@ -7,6 +7,7 @@
 
 #include <map>
 #include "external_memory.h"
+#include "external_vector.h"
 
 namespace external_memory {
 using Hash_t = unsigned long long;
@@ -48,6 +49,7 @@ class Map {
     [[nodiscard]] bool full() const; // remember that inserting to a full bucket is possible when the key is already in the bucket!
     [[nodiscard]] bool empty() const;
     [[nodiscard]] bool contains(const Hash_t &key) const;
+    [[nodiscard]] unsigned int &operator[](const Hash_t &key); // using this method to insert into a full bucket is undefined!
     [[nodiscard]] bool insert(const Hash_t &key, unsigned int value);
     [[nodiscard]] bool erase(const Hash_t &key);
     [[nodiscard]] auto find(const Hash_t &key) const;
@@ -74,6 +76,8 @@ class Map {
   void initialize(bool reset = false);
 
   void insert(const Key &key, unsigned int value);
+
+  unsigned int &operator[](const Key &key);
 
   void erase(const Key &key);
 
@@ -113,9 +117,15 @@ void Map<Key>::eraseByHash(const Hash_t &key) {
   if (bucket.erase(key)) {
     size_--;
   }
-  if (bucket.empty()) {
+  if (bucket.empty() && bucket.local_depth > 0) {
     deleteBucket(key);
   }
+}
+template<class Key>
+unsigned int &Map<Key>::operator[](const Key &key) {
+  Hash_t hash = Hash()(key);
+  insertByHash(hash, 0);
+  return getBucket(hash)[hash];
 }
 template<class Key>
 void Map<Key>::insert(const Key &key, unsigned int value) {
@@ -195,32 +205,62 @@ void Map<Key>::initialize(bool reset) {
   data_.initialize(reset);
   dict_.initialize(reset);
   dict_.cache();
+  if (reset) {
+    unsigned int id = data_.newPage();
+    Bucket bucket(*this, id);
+    dict_.push_back(id);
+  }
 }
 template<class Key>
 unsigned int Map<Key>::getBucketId(const Hash_t &key) {
   return dict_.get(key & ((1 << global_depth_) - 1));
 }
-template<class Key>
+template<class Key> // the value is int
 class MultiMap {
  private:
+  const std::string file_name_;
   Map<Key> vector_pos_;
+  Vectors &vectors_;
  public:
-  explicit MultiMap(const std::string &file_name);
+  MultiMap(std::string file_name, Vectors &vectors) : file_name_(std::move(file_name)), vectors_(vectors) {};
 
   ~MultiMap();
 
-  void initialize(const std::string &file_name);
+  void initialize(bool reset = false);
 
-  void insert(const Key &key, unsigned int value);
+  void insert(const Key &key, int value);
 
-  void erase(const Key &key, unsigned int value);
+  void rewrite(const Key &key, std::vector<int> &&values);
 
-  std::vector<unsigned int> findAll(const Key &key) const;
-
-  unsigned int size() const;
-
-  unsigned int map_size() const;
+  std::vector<int> findAll(const Key &key) const &&; // the result may contain duplicated values as well as deleted values (as there is no erase method). It's the user's responsibility to remove them. It's recommended to call `rewrite` to remove them in this multimap.
 };
+template<class Key>
+std::vector<int> MultiMap<Key>::findAll(const Key &key) const &&{
+  unsigned int pos = vector_pos_.at(key);
+  return vectors_.getVector(pos).getData();
+}
+template<class Key>
+void MultiMap<Key>::rewrite(const Key &key, std::vector<int> &&values) {
+  unsigned int pos = vector_pos_.at(key);
+  auto vector = vectors_.getVector(pos);
+  if (vector.rewrite(std::move(values))) {
+    pos = vector.getPos();
+    vector_pos_[key] = pos;
+  }
+}
+template<class Key>
+void MultiMap<Key>::insert(const Key &key, int value) {
+  unsigned int pos = vector_pos_.at(key);
+  auto vector = vectors_.getVector(pos);
+  if (vector.push_back(value)) {
+    pos = vector.getPos();
+    vector_pos_[key] = pos;
+  }
+}
+template<class Key>
+void MultiMap<Key>::initialize(bool reset) {
+  vector_pos_.initialize(reset);
+}
 }
 
 #endif //BOOKSTORE_SRC_EXTERNAL_HASH_MAP_H_
