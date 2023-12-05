@@ -104,7 +104,7 @@ auto Map<Key>::Bucket::end() const {
   return data.end();
 }
 template<class Key>
-Map<Key>::Bucket Map<Key>::Bucket::split() &&{
+Map<Key>::Bucket Map<Key>::Bucket::split() {
   Bucket ret(map);
   for (auto it = data.begin(); it != data.end();) {
     if (getLocalHighBit(it->first)) {
@@ -121,10 +121,12 @@ template<class Key>
 bool Map<Key>::Bucket::empty() const {
   return data.empty();
 }
-template
-class Map<std::string>;
 template<class Key>
 unsigned int &Map<Key>::Bucket::operator[](const Hash_t &key) {
   return data[key];
 }
+template
+class Map<std::string>;
+template
+class MultiMap<std::string>;
 }

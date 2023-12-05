@@ -17,12 +17,14 @@ using Hash_t = unsigned long long;
  * @see http://xorshift.di.unimi.it/splitmix64.c
  */
 class Hash {
+ private:
   static Hash_t splitmix64(Hash_t x);
   /**
    * @brief The hash function for std::string.
    * @param str The string to be hashed.
    * @return The hash value.
    */
+ public:
   Hash_t operator()(const std::string &str);
 };
 /**
@@ -82,7 +84,7 @@ class Map {
     [[nodiscard]] bool erase(const Hash_t &key);
     [[nodiscard]] auto find(const Hash_t &key) const;
     [[nodiscard]] auto end() const;
-    Bucket split() &&; // the id of the new bucket is not set!
+    Bucket split(); // the id of the new bucket is not set!
   };
 
   Bucket cache_ = {*this};
@@ -140,7 +142,7 @@ class Map {
    * @param key The key.
    * @return The value of the key. If the key is not in the map, return 0.
    */
-  unsigned int at(const Key &key) const;
+  unsigned int at(const Key &key);
   /**
    * @brief Get the size of the map.
    * @return The size of the map.
@@ -161,7 +163,7 @@ unsigned int Map<Key>::size() const {
   return size_;
 }
 template<class Key>
-unsigned int Map<Key>::at(const Key &key) const {
+unsigned int Map<Key>::at(const Key &key) {
   Hash_t hash = Hash()(key);
   Bucket &bucket = getBucket(hash);
   auto it = bucket.find(hash);
@@ -334,10 +336,10 @@ class MultiMap {
    * @param key The key.
    * @return The result.
    */
-  std::vector<int> findAll(const Key &key) const &&;
+  std::vector<int> findAll(const Key &key) &&;
 };
 template<class Key>
-std::vector<int> MultiMap<Key>::findAll(const Key &key) const &&{
+std::vector<int> MultiMap<Key>::findAll(const Key &key) &&{
   unsigned int pos = vector_pos_.at(key);
   return vectors_.getVector(pos).getData();
 }
