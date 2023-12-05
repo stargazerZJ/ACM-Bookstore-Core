@@ -73,9 +73,7 @@ void Array::flush() {
 void Array::double_size() {
   if (cached_) {
     cache_.resize(size_ << 1);
-    for (unsigned int i = 0; i < size_; ++i) {
-      cache_[i + size_] = cache_[i];
-    }
+    memcpy(cache_.data() + size_, cache_.data(), size_ * sizeof(int));
   } else {
     file_.seekg(0, std::ios::beg);
     file_.seekp(0, std::ios::end);
