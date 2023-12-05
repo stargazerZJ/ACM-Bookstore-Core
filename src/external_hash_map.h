@@ -11,31 +11,59 @@
 
 namespace external_memory {
 using Hash_t = unsigned long long;
+/**
+ * @brief A hash function that maps a string to a 64-bit unsigned integer.
+ * @details The hash function is based on splitmix64.
+ * @see http://xorshift.di.unimi.it/splitmix64.c
+ */
 class Hash {
   static Hash_t splitmix64(Hash_t x);
+  /**
+   * @brief The hash function for std::string.
+   * @param str The string to be hashed.
+   * @return The hash value.
+   */
   Hash_t operator()(const std::string &str);
 };
-template<class Key> // the value is unsigned int
+/**
+ * @brief A hash map that maps a key to an unsigned integer.
+ * @details The hash map is based on extendible hashing.
+ * @see https://en.wikipedia.org/wiki/Extendible_hashing
+ * @see https://www.geeksforgeeks.org/extendible-hashing-dynamic-approach-to-dbms/
+ * @see https://dl.acm.org/doi/10.1145/320083.320092
+ * @tparam Key The type of the key.
+ * @attention It's not recommended to store zero in the map, because the `at` method returns 0 if the key is not in the map.
+ * @attention The key must be hashable, and the uniformity of the hash function is important.
+ * @attention No collision handling is implemented! To avoid collision, it's recommended to insert less than 1e6 keys.
+ * @note The dictionary is cached in the memory.
+ * @note The bucket containing the most recently accessed key is cached in the memory.
+ */
+template<class Key>
 class Map {
  private:
-  const std::string file_name_;
-  Array dict_;
-  Pages data_;
-  int &size_ = data_.getInfo(1);
-  int &global_depth_ = data_.getInfo(2);
-  static constexpr unsigned int kMaxGlobalDepth = 23;
-  static constexpr unsigned int kSizeOfPair = sizeof(Hash_t) + sizeof(unsigned int);
-  static constexpr unsigned int kPairsPerPage = (kIntegerPerPage - sizeof(unsigned short) * 2) / kSizeOfPair;
+  const std::string
+      file_name_; // file_name_ + "_dict" is the file for the directory, and file_name_ + "_data" is the file for the data.
+  Array dict_; // the directory
+  Pages data_; // the data
+  int &size_ = data_.getInfo(1); // the size of the map
+  int &global_depth_ = data_.getInfo(2); // the global depth of the directory
+  static constexpr unsigned int
+      kMaxGlobalDepth = 23; // If the global depth is larger than this value, the program will throw an exception.
+  static constexpr unsigned int
+      kSizeOfPair = sizeof(Hash_t) + sizeof(unsigned int); // the size of a pair of key and value
+  static constexpr unsigned int
+      kPairsPerPage = (kIntegerPerPage - sizeof(unsigned short) * 2) / kSizeOfPair; // the number of pairs in a page
+  static_assert(kSizeOfPair == 12, "The size of a pair of key and value is not 12!");
 
-  inline unsigned int getBucketId(const Hash_t &key);
+  inline unsigned int getBucketId(const Hash_t &key); // get the id of the bucket that may contain the key
 
   struct Bucket {
    private:
-    void flush() const;
+    void flush() const; // flush the bucket to the disk
    public:
-    Map<Key> &map;
-    unsigned int id = 0;
-    unsigned int local_depth = 0;
+    Map<Key> &map; // the map that the bucket belongs to
+    unsigned int id = 0; // the id of the bucket, 0 means that the bucket is not initialized
+    unsigned int local_depth = 0; // the local depth of the bucket
     std::map<Hash_t, unsigned int> data;
     Bucket(Map &map) : map(map) {};
     Bucket(Map &map, unsigned int id);
@@ -59,32 +87,69 @@ class Map {
 
   Bucket cache_ = {*this};
 
-  void flush();
+  void flush(); // flush the Bucket cache to the disk. The dictionary is not flushed.
+  /**
+   * @brief Get the bucket that contains the key.
+   * @details
+   *    Returns the reference to cache_ if the bucket is cached.
+   *    Otherwise, fetch the bucket from the disk and return the reference to cache_.
+   * @attention If getBucket is called with another key, the reference to cache_ will be changed.
+   * @attention Other methods may change the reference to cache_.
+   */
   Bucket &getBucket(const Hash_t &key);
-  unsigned int splitBucket(const Hash_t &key);
-  void deleteBucket(const Hash_t &key);
+  unsigned int splitBucket(const Hash_t &key); // return the id of the new bucket, cache_ is set to the bucket that may contain the key
+  void deleteBucket(const Hash_t &key); // delete an empty bucket, cache_ is cleared
   void expand();
   void insertByHash(const Hash_t &key, unsigned int value);
   void eraseByHash(const Hash_t &key);
 
  public:
-  explicit Map(std::string file_name)
+  /**
+   * @brief Construct a new Map object.
+   */
+  explicit Map(std::string file_name = "map")
       : file_name_(std::move(file_name)), dict_(file_name_ + "_dict"), data_(file_name_ + "_data") {};
-
+  /**
+   * @brief Destroy the Map object.
+   */
   ~Map();
-
+  /**
+   * @brief Initialize the map.
+   * @param reset Whether to reset the map.
+   */
   void initialize(bool reset = false);
-
+  /**
+   * @brief Insert a key-value pair into the map, if the key is not in the map.
+   * @param key The key.
+   * @param value The value.
+   */
   void insert(const Key &key, unsigned int value);
-
+  /**
+   * @brief Get the value of the key. If the key is not in the map, insert the key with value 0.
+   * @param key The key.
+   * @return The reference value of the key.
+   */
   unsigned int &operator[](const Key &key);
-
+  /**
+   * @brief Erase the key from the map.
+   * @param key The key.
+   */
   void erase(const Key &key);
-
+  /**
+   * @brief Get the value of the key. If the key is not in the map, return 0.
+   * @param key The key.
+   * @return The value of the key. If the key is not in the map, return 0.
+   */
   unsigned int at(const Key &key) const;
-
+  /**
+   * @brief Get the size of the map.
+   * @return The size of the map.
+   */
   unsigned int size() const;
-
+  /**
+   * @brief Get the global depth of the directory.
+   * @return The global depth of the directory.
+   */
   unsigned int globalDepth() const;
 };
 template<class Key>
@@ -215,24 +280,61 @@ template<class Key>
 unsigned int Map<Key>::getBucketId(const Hash_t &key) {
   return dict_.get(key & ((1 << global_depth_) - 1));
 }
+/**
+ * @brief A multimap that maps a key to a vector of non-zero integers.
+ * @details The multimap is based on extendible hashing.
+ * @tparam Key The type of the key.
+ * @attention Storing zero as value is undefined!
+ * @attention There is way to erase a key-value pair. To erase a key-value pair, rewrite the vector of the key. For performance, it's recommended to erase lazily after calling `findAll`.
+ * @attention The key must be hashable, and the uniformity of the hash function is important.
+ * @attention No collision handling is implemented! To avoid collision, it's recommended to insert less than 1e6 keys.
+ * @note The vector storage (i.e. Vectors) class is shared by all classes that use it. Therefore, it's passed as a reference to the constructor.
+ */
 template<class Key> // the value is int
 class MultiMap {
  private:
   const std::string file_name_;
   Map<Key> vector_pos_;
-  Vectors &vectors_;
+  Vectors &vectors_; // the vector storage
  public:
+  /**
+   * @brief Construct a new MultiMap object.
+   */
   MultiMap(std::string file_name, Vectors &vectors) : file_name_(std::move(file_name)), vectors_(vectors) {};
-
-  ~MultiMap();
-
+  /**
+   * @brief Destroy the MultiMap object.
+   */
+  ~MultiMap() = default;
+  /**
+   * @brief Initialize the multimap.
+   * @param reset Whether to reset the multimap.
+   */
   void initialize(bool reset = false);
-
+  /**
+   * @brief Insert a key-value pair into the multimap.
+   * @param key The key.
+   * @param value The value.
+   */
   void insert(const Key &key, int value);
-
-  void rewrite(const Key &key, std::vector<int> &&values);
-
-  std::vector<int> findAll(const Key &key) const &&; // the result may contain duplicated values as well as deleted values (as there is no erase method). It's the user's responsibility to remove them. It's recommended to call `rewrite` to remove them in this multimap.
+  /**
+   * @brief Erase the key from the multimap.
+   * @param key The key.
+   */
+  void erase(const Key &key);
+  /**
+   * @brief Rewrite the vector of the key.
+   * @details If the vector is empty, the key is erased.
+   * @param key The key.
+   * @param values The vector.
+   */
+  void rewrite(const Key &key, std::vector<int> &&values = {});
+  /**
+   * @brief Find all values of the key.
+   * @details The result may contain duplicated values as well as deleted values (as there is no way to erase a key-value pair). It's the user's responsibility to remove them. It's recommended to call `rewrite` to remove them in this multimap.
+   * @param key The key.
+   * @return The result.
+   */
+  std::vector<int> findAll(const Key &key) const &&;
 };
 template<class Key>
 std::vector<int> MultiMap<Key>::findAll(const Key &key) const &&{
@@ -240,12 +342,21 @@ std::vector<int> MultiMap<Key>::findAll(const Key &key) const &&{
   return vectors_.getVector(pos).getData();
 }
 template<class Key>
+void MultiMap<Key>::erase(const Key &key) {
+  unsigned int pos = vector_pos_.at(key);
+  auto vector = vectors_.getVector(pos);
+  if (vector.del()) {
+    vector_pos_.erase(key);
+  }
+}
+template<class Key>
 void MultiMap<Key>::rewrite(const Key &key, std::vector<int> &&values) {
   unsigned int pos = vector_pos_.at(key);
   auto vector = vectors_.getVector(pos);
   if (vector.rewrite(std::move(values))) {
     pos = vector.getPos();
-    vector_pos_[key] = pos;
+    if (pos) vector_pos_[key] = pos;
+    else vector_pos_.erase(key);
   }
 }
 template<class Key>
