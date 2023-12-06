@@ -280,4 +280,4 @@ bool Vectors::Vector::del() {
   updatePos(0);
   return true;
 }
-}
+} // namespace external_memory

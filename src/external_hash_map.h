@@ -374,6 +374,6 @@ template<class Key>
 void MultiMap<Key>::initialize(bool reset) {
   vector_pos_.initialize(reset);
 }
-}
+} // namespace external_memory
 
 #endif //BOOKSTORE_SRC_EXTERNAL_HASH_MAP_H_

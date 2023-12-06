@@ -227,4 +227,4 @@ void Pages::setInfo(unsigned int n, int value) {
 int &Pages::getInfo(unsigned int n) {
   return info_[n];
 }
-}
+} // namespace external_memory

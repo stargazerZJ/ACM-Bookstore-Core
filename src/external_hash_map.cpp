@@ -129,4 +129,4 @@ template
 class Map<std::string>;
 template
 class MultiMap<std::string>;
-}
+} // namespace external_memory

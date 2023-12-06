@@ -347,6 +347,6 @@ class Pages {
   void deletePage(unsigned int n);
 };
 
-}
+} // namespace external_memory
 
 #endif //BOOKSTORE_SRC_EXTERNAL_MEMORY_H_

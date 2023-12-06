@@ -246,5 +246,5 @@ class Vectors {
    */
   [[nodiscard]] Vector newVector();
 };
-}
+} // namespace external_memory
 #endif //BOOKSTORE_SRC_EXTERNAL_MEMORY_CPP_EXTERNAL_VECTORS_H_
