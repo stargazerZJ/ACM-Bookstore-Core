@@ -106,12 +106,12 @@ class Vectors {
    * When `capacity` is kIntegerPerPage, this function will delete the page entirely.
    *
    * @param capacity The capacity of the vector, must be a power of 2 and <= kIntegerPerPage.
-   * @param n The page number.
+   * @param page The page number.
    * @param offset The offset of the allocated space.
    *
    * @attention `capacity` must be a power of 2 and <= kIntegerPerPage. Otherwise, the behavior is undefined.
    */
-  void deallocate(unsigned int n, unsigned int offset, unsigned int capacity);
+  void deallocate(unsigned int page, unsigned int offset, unsigned int capacity);
   /**
    * @brief Allocate a new page.
    * @return unsigned int The index of the new page, 1-based.

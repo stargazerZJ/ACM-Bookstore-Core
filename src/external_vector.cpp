@@ -105,12 +105,11 @@ void Vectors::clearSpace(const unsigned int capacity, unsigned int n, unsigned i
   memset(tmp, 0, sizeof(tmp));
   data_.setPart(n, offset, capacity, tmp);
 }
-void Vectors::deallocate(unsigned int n, unsigned int offset, unsigned int capacity) {
-  if (n == 0 || capacity == 0) {
+void Vectors::deallocate(unsigned int page, unsigned int offset, unsigned int capacity) {
+  if (page == 0 || capacity == 0) {
     return;
   }
   if (capacity < kIntegerPerPage) {
-    unsigned int page = getPageOfCapacity(capacity);
     int free_head = getPageInfo(kPageInfo::kFreeHead, page);
     int unoccupied_beg = getPageInfo(kPageInfo::kUnoccupiedBeg, page);
     data_.fetchPage(page);
@@ -127,7 +126,7 @@ void Vectors::deallocate(unsigned int n, unsigned int offset, unsigned int capac
     }
     free_pages_of_capacity_[__builtin_ctz(capacity)].insert(page);
   } else {
-    deletePage(n);
+    deletePage(page);
   }
 }
 unsigned int Vectors::Vector::getPos() const {
@@ -167,8 +166,12 @@ bool Vectors::Vector::push_back(int value) {
       vectors_.data_.setPart(page_id_, offset_, data.size(), data.data());
       return false;
     } else {
-      if(pos_) vectors_.deallocate(page_id_, offset_, capacity);
-      updatePos(vectors_.allocate(capacity * 2));
+      if (pos_) {
+        vectors_.deallocate(page_id_, offset_, capacity);
+        updatePos(vectors_.allocate(capacity * 2));
+      } else {
+        updatePos(vectors_.allocate(1));
+      }
       vectors_.data_.setPart(page_id_, offset_, data.size(), data.data());
       return true;
     }

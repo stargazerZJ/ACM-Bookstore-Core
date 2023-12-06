@@ -26,7 +26,7 @@ int Array::get(unsigned int n) {
     return cache_[n];
   } else {
     file_.seekg(n * sizeof(int), std::ios::beg);
-    int value;
+    int value = 0;
     file_.read(reinterpret_cast<char *>(&value), sizeof(int));
     return value;
   }
@@ -75,11 +75,11 @@ void Array::double_size() {
     cache_.resize(size_ << 1);
     memcpy(cache_.data() + size_, cache_.data(), size_ * sizeof(int));
   } else {
-    file_.seekg(0, std::ios::beg);
-    file_.seekp(0, std::ios::end);
     for (unsigned int i = 0; i < size_; ++i) {
-      int value;
+      int value = 0;
+      file_.seekg(i * sizeof(int), std::ios::beg);
       file_.read(reinterpret_cast<char *>(&value), sizeof(int));
+      file_.seekp((i + size_) * sizeof(int), std::ios::beg);
       file_.write(reinterpret_cast<char *>(&value), sizeof(int));
     }
   }
@@ -90,7 +90,7 @@ void Array::halve_size() {
     cache_.resize(size_ >> 1);
   } else {
     file_.close();
-    std::filesystem::resize_file(file_name_, size_ >> 1);
+    std::filesystem::resize_file(file_name_, (size_ >> 1) * sizeof(int));
     file_.open(file_name_, std::ios::in | std::ios::out | std::ios::binary);
   }
   size_ >>= 1;

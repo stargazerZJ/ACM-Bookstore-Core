@@ -54,7 +54,7 @@ class Map {
   static constexpr unsigned int
       kSizeOfPair = sizeof(Hash_t) + sizeof(unsigned int); // the size of a pair of key and value
   static constexpr unsigned int
-      kPairsPerPage = (kIntegerPerPage - sizeof(unsigned short) * 2) / kSizeOfPair; // the number of pairs in a page
+      kPairsPerPage = (kPageSize - sizeof(unsigned short) * 2) / kSizeOfPair; // the number of pairs in a page
   static_assert(kSizeOfPair == 12, "The size of a pair of key and value is not 12!");
 
   inline unsigned int getBucketId(const Hash_t &key); // get the id of the bucket that may contain the key
