@@ -287,9 +287,20 @@ class Test {
     }
     void erase(const std::string &key, int value) {
       assert(value > 0);
-      map_.insert(key, -value);
+      auto vec = map_.findAll(key);
+      // erase the first occurrence
+      for (auto it = vec.begin(); it != vec.end(); ++it) {
+        if (*it == value) {
+          vec.erase(it);
+          break;
+        }
+      }
+      map_.rewrite(key, std::move(vec));
+//      map_.insert(key, -value);
     }
     static void regularize(vector<int> &values) {
+      std::sort(values.begin(), values.end());
+      return;
       set<int> s;
       for (auto &x : values) {
         if (x > 0) {
@@ -315,7 +326,7 @@ class Test {
         }
         cout << endl;
       }
-      map_.rewrite(key, std::move(vec));
+//      map_.rewrite(key, std::move(vec));
     }
   };
 
@@ -339,11 +350,11 @@ class Test {
       cin >> op >> key;
       if (op == "insert") {
         cin >> value;
-        value ++; // avoid 0
+        value++; // avoid 0
         test.insert(key, value);
       } else if (op == "delete") {
         cin >> value;
-        value ++; // avoid 0
+        value++; // avoid 0
         test.erase(key, value);
       } else if (op == "find") {
         test.findAll(key);
