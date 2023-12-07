@@ -316,7 +316,7 @@ class Test {
     }
   };
 
-  static bool test_multimap() {
+  static bool test_multimap(bool force_reset = false) {
     Test::MultiMapTest test(path + "multimap");
     bool reset = true;
     if (std::filesystem::exists(path + "multimap_data_data.db")) {
@@ -324,6 +324,8 @@ class Test {
     }
     test.initialize(reset);
     int n;
+    // optimize cin and cout
+    ios::sync_with_stdio(false);
     // input n, if eof is reached, exit
     if (!(cin >> n) || n <= 0) {
       return false;
