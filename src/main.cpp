@@ -292,10 +292,10 @@ class Test {
       for (auto it = vec.begin(); it != vec.end(); ++it) {
         if (*it == value) {
           vec.erase(it);
-          break;
+          map_.rewrite(key, std::move(vec));
+          return;
         }
       }
-      map_.rewrite(key, std::move(vec));
 //      map_.insert(key, -value);
     }
     static void regularize(vector<int> &values) {
