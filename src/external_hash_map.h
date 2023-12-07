@@ -80,11 +80,11 @@ class Map {
     [[nodiscard]] bool empty() const;
     [[nodiscard]] bool contains(const Hash_t &key) const;
     [[nodiscard]] unsigned int &operator[](const Hash_t &key); // using this method to insert into a full bucket is undefined!
-    [[nodiscard]] bool insert(const Hash_t &key, unsigned int value);
-    [[nodiscard]] bool erase(const Hash_t &key);
+    bool insert(const Hash_t &key, unsigned int value);
+    bool erase(const Hash_t &key);
     [[nodiscard]] std::map<Hash_t, unsigned int>::const_iterator find(const Hash_t &key) const;
     [[nodiscard]] std::map<Hash_t, unsigned int>::const_iterator end() const;
-    Bucket split(); // the id of the new bucket is not set!
+    [[nodiscard]] Bucket split(); // the id of the new bucket is not set!
   };
 
   Bucket cache_ = {*this};
@@ -132,7 +132,7 @@ class Map {
    * @return The reference value of the key.
    * @attention The reference may be invalid after calling `insert`, `at`, `operator []` or `erase`.
    */
-  unsigned int &operator[](const Key &key);
+  [[nodiscard]] unsigned int &operator[](const Key &key);
   /**
    * @brief Erase the key from the map.
    * @param key The key.
@@ -143,17 +143,17 @@ class Map {
    * @param key The key.
    * @return The value of the key. If the key is not in the map, return 0.
    */
-  unsigned int at(const Key &key);
+  [[nodiscard]] unsigned int at(const Key &key);
   /**
    * @brief Get the size of the map.
    * @return The size of the map.
    */
-  unsigned int size() const;
+  [[nodiscard]] unsigned int size() const;
   /**
    * @brief Get the global depth of the directory.
    * @return The global depth of the directory.
    */
-  unsigned int globalDepth() const;
+  [[nodiscard]] unsigned int globalDepth() const;
 };
 template<class Key>
 unsigned int Map<Key>::globalDepth() const {

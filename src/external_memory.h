@@ -92,7 +92,7 @@ class List {
    * @return Elem The i-th element.
    * @attention No bound checking is performed.
    */
-  Elem get(unsigned n);
+  [[nodiscard]] Elem get(unsigned n);
   /**
    * @brief Set the i-th element, 1-based.
    * @param n The index of the element, 1-based.
@@ -105,7 +105,7 @@ class List {
    * @param value The value to be inserted.
    * @return unsigned int The index of the new element, 1-based.
    */
-  unsigned int insert(const Elem &value);
+  [[nodiscard]] unsigned int insert(const Elem &value);
   /**
    * @brief Erase the i-th element.
    * @details

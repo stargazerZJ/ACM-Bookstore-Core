@@ -219,7 +219,7 @@ class Vectors {
      * @return Whether the position of the vector has changed.
      * @attention The change is committed to cache or file immediately.
      */
-    [[nodiscard]] bool push_back(int value);
+    bool push_back(int value);
     /**
      * @brief Modify the vector.
      * @param data The new data of the vector.
@@ -227,12 +227,12 @@ class Vectors {
      * @attention The vector will be cleared before modifying.
      * @attention The change is committed to cache or file immediately.
      */
-    [[nodiscard]] bool update(std::vector<int> &&data);
+    bool update(std::vector<int> &&data);
     /**
      * @brief Delete the vector.
      * @return Whether the position of the vector has changed.
      */
-    [[nodiscard]] bool del();
+    bool del();
   };
   /**
    * @brief Get a vector.
