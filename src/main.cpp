@@ -11,8 +11,11 @@
 using namespace external_memory;
 using namespace std;
 
-//const string path = "../db/";
+#ifdef LOCAL
+const string path = "../db/";
+#else
 const string path = "./";
+#endif
 
 class Test {
  public:
