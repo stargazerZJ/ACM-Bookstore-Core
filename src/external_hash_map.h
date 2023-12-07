@@ -74,7 +74,7 @@ class Map {
     ~Bucket();
     explicit Bucket(const Bucket &bucket) = delete;
     Bucket &operator=(const Bucket &bucket) = delete;
-    [[nodiscard]] inline Hash_t getLocalHighBit(const Hash_t &key) const;
+    [[nodiscard]] Hash_t getLocalHighBit(const Hash_t &key) const;
     [[nodiscard]] unsigned int size() const;
     [[nodiscard]] bool full() const; // remember that inserting to a full bucket is possible when the key is already in the bucket!
     [[nodiscard]] bool empty() const;

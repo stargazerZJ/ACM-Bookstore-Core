@@ -25,6 +25,20 @@ concept ListElement = requires(T t) {
 }
     && std::is_constructible_v<T, const char *>
     && (T::byte_size() >= sizeof(unsigned int));
+/**
+ * @brief A class for storing a list of elements in external memory.
+ *
+ * @details
+ * The list is stored in a file, whose name (and path) is specified in the constructor.
+ *
+ * `initialize` must be called before using the list.
+ *
+ * @tparam Elem The type of the elements.
+ * @tparam recover_space Whether to recover space.
+ *
+ * @attention The list is 1-indexed.
+ * @attention No bound checking is performed.
+ */
 template<ListElement Elem, bool recover_space = true>
 class List {
  private:
@@ -35,20 +49,87 @@ class List {
   using bytes = char[byte_size_]; // a byte array
   unsigned int size_ = 0; // the current maximum index of the elements
   unsigned int free_head_ = 0; // the head of the free elements
-  bool cached_ = false;
-  std::vector<bytes> cache_;
-  void getHead(unsigned int n, unsigned int &dest);
-  void setHead(unsigned int n, unsigned int value);
+  bool cached_ = false; // whether the whole list is cached
+  std::vector<bytes> cache_; // the cache
+  void getHead(unsigned int n, unsigned int &dest); // get the first 4 bytes of the n-th element
+  void setHead(unsigned int n, unsigned int value); // set the first 4 bytes of the n-th element
  public:
+  /**
+   * @brief Construct a new List object.
+   *
+   * @param file_name The name (and path) of the file.
+   */
   explicit List(const std::string &file_name = "list") : file_name_(file_name + kFileExtension) {};
+  /**
+   * @brief Destroy the List object.
+   * @details
+   * The destructor flushes the cache and closes the file.
+   */
   ~List();
+  /**
+   * @brief Initialize the list.
+   *
+   * @details
+   * When `reset` is `true`, the file is truncated.
+   * Otherwise, the file is opened.
+   *
+   * @param reset Whether to reset the file.
+   *
+   * @attention `initialize` must be called before using the list.
+   * @attention `initialize` must not be called twice.
+   */
   void initialize(bool reset = false);
+  /**
+   * @brief Get the i-th element, 1-based.
+   * @param n The index of the element, 1-based.
+   * @param dest The destination.
+   * @attention No bound checking is performed.
+   */
   void get(unsigned n, Elem &dest);
+  /**
+   * @brief Get the i-th element, 1-based.
+   * @param n The index of the element, 1-based.
+   * @return Elem The i-th element.
+   * @attention No bound checking is performed.
+   */
   Elem get(unsigned n);
-  void update(unsigned n, const Elem &value);
+  /**
+   * @brief Set the i-th element, 1-based.
+   * @param n The index of the element, 1-based.
+   * @param value The value to be set.
+   * @attention No bound checking is performed.
+   */
+  void set(unsigned n, const Elem &value);
+  /**
+   * @brief Insert a new element.
+   * @param value The value to be inserted.
+   * @return unsigned int The index of the new element, 1-based.
+   */
   unsigned int insert(const Elem &value);
+  /**
+   * @brief Erase the i-th element.
+   * @details
+   *  If `recover_space` is `true`, the space is recovered.
+   *  Otherwise, the function does nothing.
+   * @param n The index of the element, 1-based.
+   * @attention No bound checking is performed.
+   */
   void erase(unsigned n);
+  /**
+   * @brief Cache the whole list.
+   *
+   * @details
+   * The whole list is read into the cache.
+   * Subsequent operations will be performed on the cache.
+   */
   void cache();
+  /**
+   * @brief Write the cache back to the file.
+   *
+   * @details
+   * The whole list is written back to the file.
+   * Subsequent operations will be performed on the file.
+   */
   void flush();
 };
 template<ListElement Elem, bool recover_space>
@@ -82,18 +163,18 @@ void List<Elem, recover_space>::erase(unsigned int n) {
 template<ListElement Elem, bool recover_space>
 void List<Elem, recover_space>::setHead(unsigned int n, unsigned int value) {
   if (cached_) {
-    *reinterpret_cast<unsigned int *>(cache_[n]) = value;
+    *reinterpret_cast<unsigned int *>(cache_[n - 1]) = value;
   } else {
-    file_.seekp(data_begin_ + n * sizeof(unsigned int), std::ios::beg);
+    file_.seekp(data_begin_ + (n - 1) * sizeof(unsigned int), std::ios::beg);
     file_.write(reinterpret_cast<char *>(&value), sizeof(unsigned int));
   }
 }
 template<ListElement Elem, bool recover_space>
 void List<Elem, recover_space>::getHead(unsigned int n, unsigned int &dest) {
   if (cached_) {
-    dest = *reinterpret_cast<unsigned int *>(cache_[n]);
+    dest = *reinterpret_cast<unsigned int *>(cache_[n - 1]);
   } else {
-    file_.seekg(data_begin_ + n * sizeof(unsigned int), std::ios::beg);
+    file_.seekg(data_begin_ + (n - 1) * sizeof(unsigned int), std::ios::beg);
     file_.read(reinterpret_cast<char *>(&dest), sizeof(unsigned int));
   }
 }
@@ -101,7 +182,7 @@ template<ListElement Elem, bool recover_space>
 unsigned int List<Elem, recover_space>::insert(const Elem &value) {
   if (!recover_space && free_head_ == 0) {
     if (cached_) {
-      cache_.push_back(bytes());
+      cache_.push_back();
       value.toBytes(cache_.back());
     } else {
       file_.seekp(0, std::ios::end);
@@ -109,7 +190,7 @@ unsigned int List<Elem, recover_space>::insert(const Elem &value) {
       value.toBytes(tmp);
       file_.write(tmp, byte_size_);
     }
-    return size_++;
+    return ++size_;
   } else {
     unsigned int n = free_head_;
     getHead(free_head_, free_head_);
@@ -118,23 +199,23 @@ unsigned int List<Elem, recover_space>::insert(const Elem &value) {
   }
 }
 template<ListElement Elem, bool recover_space>
-void List<Elem, recover_space>::update(unsigned int n, const Elem &value) {
+void List<Elem, recover_space>::set(unsigned int n, const Elem &value) {
   if (cached_) {
-    value.toBytes(cache_[n]);
+    value.toBytes(cache_[n - 1]);
   } else {
     bytes tmp;
     value.toBytes(tmp);
-    file_.seekp(data_begin_ + n * byte_size_, std::ios::beg);
+    file_.seekp(data_begin_ + (n - 1) * byte_size_, std::ios::beg);
     file_.write(tmp, byte_size_);
   }
 }
 template<ListElement T, bool recover_space>
 T List<T, recover_space>::get(unsigned int n) {
   if (cached_) {
-    return T(cache_[n]);
+    return T(cache_[n - 1]);
   } else {
     bytes tmp;
-    file_.seekg(data_begin_ + n * byte_size_, std::ios::beg);
+    file_.seekg(data_begin_ + (n - 1) * byte_size_, std::ios::beg);
     file_.read(tmp, byte_size_);
     return T(tmp);
   }
@@ -142,10 +223,10 @@ T List<T, recover_space>::get(unsigned int n) {
 template<ListElement T, bool recover_space>
 void List<T, recover_space>::get(unsigned int n, T &dest) {
   if (cached_) {
-    dest.fromBytes(cache_[n]);
+    dest.fromBytes(cache_[n - 1]);
   } else {
     bytes tmp;
-    file_.seekg(data_begin_ + n * byte_size_, std::ios::beg);
+    file_.seekg(data_begin_ + (n - 1) * byte_size_, std::ios::beg);
     file_.read(tmp, byte_size_);
     dest.fromBytes(tmp);
   }
