@@ -226,7 +226,6 @@ bool Vectors::Vector::rewrite(std::vector<int> &&data) {
       } else {
         vectors_.deallocate(page_id_, offset_, capacity);
         updatePos(vectors_.allocate(kIntegerPerPage));
-        vectors_.data_.setPart(page_id_, offset_, data.size(), data.data());
         ret = true;
       }
     }
@@ -240,7 +239,7 @@ bool Vectors::Vector::rewrite(std::vector<int> &&data) {
     vectors_.data_.setPage(page, data_ptr);
     data_ptr += kIntegerPerPage;
     page = vectors_.getPageInfo(kPageInfo::kNextPage, page);
-    if (!page) {
+    if (!page && filled + kIntegerPerPage < data.size()) {
       page = appendPage();
     }
   }
@@ -257,14 +256,17 @@ void Vectors::Vector::discardAfter(unsigned int last_page) {
   if (!last_page) {
     return;
   }
+  unsigned capacity = vectors_.getPageInfo(kPageInfo::kCapacity, page_id_);
   unsigned page = vectors_.getPageInfo(kPageInfo::kNextPage, last_page);
   vectors_.setPageInfo(kPageInfo::kNextPage, last_page, 0);
   vectors_.setPageInfo(kPageInfo::kLastPage, page_id_, last_page);
   while (page) {
     unsigned next_page = vectors_.getPageInfo(kPageInfo::kNextPage, page);
+    capacity -= kIntegerPerPage;
     vectors_.deletePage(page);
     page = next_page;
   }
+  vectors_.setPageInfo(kPageInfo::kCapacity, page_id_, capacity);
 }
 bool Vectors::Vector::del() {
   if (!pos_) {

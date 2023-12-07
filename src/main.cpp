@@ -11,20 +11,23 @@
 using namespace external_memory;
 using namespace std;
 
+#ifndef ONLINE_JUDGE
+const string path = "../db/";
+#else
+const string path = "./";
+#endif
+
 class Test {
  public:
 
-  const string path = "../db/";
-
-  void print_array(Array &arr) {
+  static void print_array(Array &arr) {
     cout << "Array : ";
     for (int i = 0; i < arr.size(); ++i) {
       cout << arr.get(i) << " ";
     }
     cout << endl;
   }
-
-  void test_array_1(bool reset = false, bool cache = false) {
+  static void test_array_1(bool reset = false, bool cache = false) {
     cout << "--- Test Array ---" << endl;
     cout << "Reset: " << reset << ", Cache: " << cache << endl;
     Array arr(path + "array");
@@ -42,8 +45,7 @@ class Test {
     arr.double_size();
     print_array(arr);
   }
-
-  void test_array_2() {
+  static void test_array_2() {
     test_array_1(true, false);
     test_array_1(false, false);
     test_array_1(true, true);
@@ -57,7 +59,7 @@ class Test {
     print_array(arr);
   }
 
-  void print_vector(Vectors::Vector &vec) {
+  static void print_vector(Vectors::Vector &vec) {
     cout << "Vector @ " << vec.getPos() << " : ";
     auto data = vec.getData();
     for (int i = 0; i < data.size(); ++i) {
@@ -65,8 +67,7 @@ class Test {
     }
     cout << endl;
   }
-
-  void test_vector_1(bool reset = false) {
+  static void test_vector_1(bool reset = false) {
     cout << "--- Test Vector 1 ---" << endl;
     cout << "Reset: " << reset << endl;
     Vectors vec(path + "vector");
@@ -98,7 +99,7 @@ class Test {
       print_vector(vec2);
     }
   }
-  void test_vector_2(bool reset = false) {
+  static void test_vector_2(bool reset = false) {
     cout << "--- Test Vector 2 ---" << endl;
     // insert 256 vectors whose size is 8
     Vectors vec(path + "vector");
@@ -148,8 +149,7 @@ class Test {
       if (i < 10 || i > n - 10) print_vector(vec1);
     }
   }
-
-  void test_vector_3(bool reset = false) {
+  static void test_vector_3(bool reset = false) {
     cout << "--- Test Vector 3 ---" << endl;
     {
       Vectors vec(path + "vector");
@@ -166,11 +166,11 @@ class Test {
       }
     }
   }
-  void test_vector_4(bool reset = false) {
+  static void test_vector_4(bool reset = false) {
     cout << "--- Test Vector 4 ---" << endl;
     Vectors vec(path + "vector");
     vec.initialize(reset);
-    unsigned int n = 1025;
+    unsigned int n = 1024;
     cout << "Insert 1 vector whose size is " << n << endl;
     {
       auto vec1 = vec.newVector();
@@ -179,20 +179,179 @@ class Test {
         data[j] = j;
       }
       vec1.rewrite(std::move(data));
+      cout << "vec1.push_back(2)" << endl;
+      vec1.push_back(2);
+      n = 10;
+      cout << "Rewrite vec1 with size " << n << endl;
+      data.resize(n);
+      for (int j = 0; j < n; ++j) {
+        data[j] = j;
+      }
+      vec1.rewrite(std::move(data));
+//      cout << "Delete vec1" << endl;
+//      vec1.del();
       print_vector(vec1);
     }
   }
+  static void test_vector_5(bool reset = false) {
+    cout << "--- Test Vector 5 ---" << endl;
+    // insert 256 vectors whose size is 8
+    Vectors vec(path + "vector");
+    vec.initialize(reset);
+    int n = 256, m = 4;
+    unsigned int pos[n];
+    cout << "Insert " << n << " vectors whose size is " << m << endl;
+    for (int i = 0; i < n; ++i) {
+      auto vec1 = vec.newVector();
+      vector<int> data(m);
+      for (int j = 0; j < m; ++j) {
+        data[j] = i * m + j;
+      }
+      vec1.rewrite(std::move(data));
+      pos[i] = vec1.getPos();
+    }
+    for (int i = 0; i < n; ++i) {
+      auto vec1 = vec.getVector(pos[i]);
+      if (i < 10 || i > n - 10) print_vector(vec1);
+    }
+//    n = 1;
+    cout << "Delete the latter half vectors in reverse order" << endl;
+    for (int i = n - 1; i >= n / 2; --i) {
+      auto vec1 = vec.getVector(pos[i]);
+      vec1.del();
+      pos[i] = vec1.getPos();
+      assert(pos[i] == 0);
+    }
+    for (int i = 0; i < n; ++i) {
+      auto vec1 = vec.getVector(pos[i]);
+      if (i < 10 || i > n - 10) print_vector(vec1);
+    }
+//    return;
+    n = 256;
+    cout << "Insert " << n << " vectors whose size is " << m << endl;
+    for (int i = 0; i < n; ++i) {
+      auto vec1 = vec.newVector();
+      vector<int> data(m);
+      for (int j = 0; j < m; ++j) {
+        data[j] = i * m + j;
+      }
+      vec1.rewrite(std::move(data));
+      pos[i] = vec1.getPos();
+    }
+    for (int i = 0; i < n; ++i) {
+      auto vec1 = vec.getVector(pos[i]);
+      if (i < 10 || i > n - 10) print_vector(vec1);
+    }
+  }
+  static void test_vector_final() {
+    test_vector_1(true);
+    test_vector_1(false);
+    test_vector_3(false);
+    test_vector_2(false);
+//    test_vector_4(true);
+    test_vector_4(false);
+    test_vector_4(false);
+    test_vector_5(false);
+  }
 
-  void test_vector_final() {
-//    test_vector_1(true);
-//    test_vector_1(false);
-//    test_vector_3(false);
-//    test_vector_2(false);
-    test_vector_4(true);
+  class MultiMapTest {
+   private:
+    const std::string file_name_;
+    MultiMap<std::string> map_;
+    Vectors vectors_;
+   public:
+    explicit MultiMapTest(const std::string &file_name)
+        : file_name_(file_name), vectors_(file_name + "_data"), map_(file_name + "_map", vectors_) {}
+    void initialize(bool reset = false) {
+      vectors_.initialize(reset);
+      map_.initialize(reset);
+    }
+    void printFind(const std::string &key) {
+      cout << "Find " << key << ": ";
+      auto vec = map_.findAll(key);
+      for (auto &x : vec) {
+        cout << x << " ";
+      }
+      cout << endl;
+    }
+    void test() {
+      map_.insert("a", 1);
+      map_.insert("a", 2);
+      map_.insert("b", 3);
+      printFind("a");
+      printFind("b");
+    }
+    void insert(const std::string &key, int value) {
+      assert(value > 0);
+      map_.insert(key, value);
+    }
+    void erase(const std::string &key, int value) {
+      assert(value > 0);
+      map_.insert(key, -value);
+    }
+    static void regularize(vector<int> &values) {
+      set<int> s;
+      for (auto &x : values) {
+        if (x > 0) {
+          s.insert(x);
+        } else {
+          s.erase(-x);
+        }
+      }
+      values.clear();
+      for (auto &x : s) {
+        values.push_back(x);
+      }
+    }
+    void findAll(const std::string &key) {
+      auto vec = map_.findAll(key);
+      regularize(vec);
+      if (vec.empty()) {
+        cout << "null" << endl;
+      } else {
+        for (auto &x : vec) {
+          cout << x << " ";
+        }
+        cout << endl;
+      }
+      map_.rewrite(key, std::move(vec));
+    }
+  };
+
+  static bool test_multimap() {
+    Test::MultiMapTest test(path + "multimap");
+    bool reset = true;
+    if (std::filesystem::exists(path + "multimap_data_data.db")) {
+      reset = false;
+    }
+    test.initialize(reset);
+    int n;
+    // input n, if eof is reached, exit
+    if (!(cin >> n)) {
+      return false;
+    }
+    for (int i = 0; i < n; ++i) {
+      string op, key;
+      int value;
+      cin >> op >> key;
+      if (op == "insert") {
+        cin >> value;
+        test.insert(key, value);
+      } else if (op == "delete") {
+        cin >> value;
+        test.erase(key, value);
+      } else if (op == "find") {
+        test.findAll(key);
+      } else {
+        cout << "Invalid operation" << endl;
+        return false;
+      }
+    }
+    return true;
   }
 };
 
 int main() {
-  Test().test_vector_final();
+  while (Test::test_multimap());
   return 0;
 }

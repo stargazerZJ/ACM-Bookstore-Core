@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 
-def read_file(file_path):
+def read_file(file_path, offset):
     try:
         with open(file_path, 'rb') as file:
             print("Reading file: " + file_path)
@@ -11,7 +11,7 @@ def read_file(file_path):
                 sys.exit(1)
             print ("File size: " + str(file_size // 4) + " integers")
 
-            file.seek(0)  # Reset file pointer to the beginning
+            file.seek(offset)
 
             while True:
                 data = file.read(4)
@@ -26,9 +26,10 @@ def read_file(file_path):
         sys.exit(1)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python script.py <file_path>")
+    if len(sys.argv) < 2:
+        print("Usage: python script.py file_path [offset]")
         sys.exit(1)
 
     file_path = sys.argv[1]
-    read_file(file_path)
+    offset = int(sys.argv[2]) if len(sys.argv) == 3 else 0
+    read_file(file_path, offset)

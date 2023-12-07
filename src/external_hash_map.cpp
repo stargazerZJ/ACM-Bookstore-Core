@@ -2,6 +2,7 @@
 // Created by zj on 11/29/2023.
 //
 
+#include <iostream>
 #include "external_hash_map.h"
 namespace external_memory {
 Hash_t Hash::splitmix64(Hash_t x) {
@@ -12,7 +13,7 @@ Hash_t Hash::splitmix64(Hash_t x) {
   return x ^ (x >> 31);
 }
 Hash_t Hash::operator()(const std::string &str) {
-  // compute the hash every 8 characters to increase the speed
+  /// compute the hash every 8 characters to increase the speed
   Hash_t hash = 0;
   unsigned int i = 0;
   for (; i + 8 <= str.size(); i += 8) {
@@ -29,12 +30,16 @@ Hash_t Map<Key>::Bucket::getLocalHighBit(const Hash_t &key) const {
 }
 template<class Key>
 Map<Key>::Bucket::Bucket(Map &map, unsigned int id) : map(map), id(id) {
+  if (!id) {
+    local_depth = 0;
+    return;
+  }
   Page tmp;
   map.data_.getPage(id, tmp);
   local_depth = tmp[0] >> 16;
   unsigned int size = tmp[0] & ((1 << 16) - 1);
   for (unsigned int i = 0; i < size; ++i) {
-    Hash_t key = static_cast<Hash_t>(tmp[i * 3 + 1]) << 32 | tmp[i * 3 + 2];
+    Hash_t key = *reinterpret_cast<Hash_t *>(tmp + i * 3 + 1);
     int value = tmp[i * 3 + 3];
     data.insert(data.end(), {key, value});
   }
@@ -43,6 +48,7 @@ template<class Key>
 void Map<Key>::Bucket::flush() const {
   if (!id) return;
   Page tmp;
+  memset(tmp, 0, sizeof(tmp));
   tmp[0] = (local_depth << 16) | data.size();
   unsigned int i = 0;
   for (auto &pair : data) {
@@ -96,11 +102,11 @@ bool Map<Key>::Bucket::erase(const Hash_t &key) {
   return data.size() < size_before;
 }
 template<class Key>
-auto Map<Key>::Bucket::find(const Hash_t &key) const {
+std::map<Hash_t, unsigned int>::const_iterator Map<Key>::Bucket::find(const Hash_t &key) const {
   return data.find(key);
 }
 template<class Key>
-auto Map<Key>::Bucket::end() const {
+std::map<Hash_t, unsigned int>::const_iterator Map<Key>::Bucket::end() const {
   return data.end();
 }
 template<class Key>
@@ -108,7 +114,7 @@ Map<Key>::Bucket Map<Key>::Bucket::split() {
   Bucket ret(map);
   for (auto it = data.begin(); it != data.end();) {
     if (getLocalHighBit(it->first)) {
-      ret.data.insert(*it);
+      ret.data.insert(ret.data.end(), *it);
       it = data.erase(it);
     } else {
       ++it;

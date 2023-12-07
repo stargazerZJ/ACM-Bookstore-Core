@@ -82,8 +82,8 @@ class Map {
     [[nodiscard]] unsigned int &operator[](const Hash_t &key); // using this method to insert into a full bucket is undefined!
     [[nodiscard]] bool insert(const Hash_t &key, unsigned int value);
     [[nodiscard]] bool erase(const Hash_t &key);
-    [[nodiscard]] auto find(const Hash_t &key) const;
-    [[nodiscard]] auto end() const;
+    [[nodiscard]] std::map<Hash_t, unsigned int>::const_iterator find(const Hash_t &key) const;
+    [[nodiscard]] std::map<Hash_t, unsigned int>::const_iterator end() const;
     Bucket split(); // the id of the new bucket is not set!
   };
 
@@ -130,6 +130,7 @@ class Map {
    * @brief Get the value of the key. If the key is not in the map, insert the key with value 0.
    * @param key The key.
    * @return The reference value of the key.
+   * @attention The reference may be invalid after calling `insert`, `at`, `operator []` or `erase`.
    */
   unsigned int &operator[](const Key &key);
   /**
@@ -235,13 +236,15 @@ void Map<Key>::deleteBucket(const Hash_t &key) {
   }
   data_.deletePage(bucket_id);
   old.id = 0;
+  Bucket &sibling = getBucket(sibling_id);
+  sibling.local_depth--;
 }
 template<class Key>
 unsigned int Map<Key>::splitBucket(const Hash_t &key) {
   Bucket old(std::move(getBucket(key)));
   bool flag = old.getLocalHighBit(key);
   unsigned int new_id = data_.newPage();
-  Bucket new_bucket = std::move(old.split());
+  Bucket new_bucket = old.split();
   new_bucket.id = new_id;
   unsigned int new_local_depth = new_bucket.local_depth;
   for (unsigned int i =
@@ -302,7 +305,7 @@ class MultiMap {
   /**
    * @brief Construct a new MultiMap object.
    */
-  MultiMap(std::string file_name, Vectors &vectors) : file_name_(std::move(file_name)), vectors_(vectors) {};
+  MultiMap(std::string file_name, Vectors &vectors) : file_name_(std::move(file_name)), vector_pos_(file_name_ + "_dict"), vectors_(vectors) {};
   /**
    * @brief Destroy the MultiMap object.
    */
@@ -336,10 +339,10 @@ class MultiMap {
    * @param key The key.
    * @return The result.
    */
-  std::vector<int> findAll(const Key &key) &&;
+  std::vector<int> findAll(const Key &key);
 };
 template<class Key>
-std::vector<int> MultiMap<Key>::findAll(const Key &key) &&{
+std::vector<int> MultiMap<Key>::findAll(const Key &key) {
   unsigned int pos = vector_pos_.at(key);
   return vectors_.getVector(pos).getData();
 }
