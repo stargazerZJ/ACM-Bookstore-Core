@@ -11,11 +11,8 @@
 using namespace external_memory;
 using namespace std;
 
-#ifndef ONLINE_JUDGE
-const string path = "../db/";
-#else
+//const string path = "../db/";
 const string path = "./";
-#endif
 
 class Test {
  public:
