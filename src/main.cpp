@@ -310,7 +310,8 @@ class Test {
         cout << "null" << endl;
       } else {
         for (auto &x : vec) {
-          cout << x << " ";
+          cout << x - 1 << " "; // avoid 0
+//          cout << x << " ";
         }
         cout << endl;
       }
@@ -327,7 +328,7 @@ class Test {
     test.initialize(reset);
     int n;
     // input n, if eof is reached, exit
-    if (!(cin >> n)) {
+    if (!(cin >> n) || n <= 0) {
       return false;
     }
     for (int i = 0; i < n; ++i) {
@@ -336,9 +337,11 @@ class Test {
       cin >> op >> key;
       if (op == "insert") {
         cin >> value;
+        value ++; // avoid 0
         test.insert(key, value);
       } else if (op == "delete") {
         cin >> value;
+        value ++; // avoid 0
         test.erase(key, value);
       } else if (op == "find") {
         test.findAll(key);
