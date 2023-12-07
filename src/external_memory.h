@@ -226,9 +226,9 @@ class Pages {
    */
   void flushInfo();
   /**
-   * @brief Get the size of the pages, not including the info page.
+   * @brief Get the current maximum index of the pages, 1-based.
    *
-   * @return unsigned int The size of the pages, not including the info page.
+   * @return unsigned int The current maximum index of the pages, 1-based.
    */
   unsigned int size() const;
   /**
@@ -318,7 +318,7 @@ class Pages {
    * @param offset The offset of the integer, 0-based, in integers, must be smaller than `kIntegerPerPage`.
    * @return unsigned int The absolute position.
    */
-   static unsigned int toPosition(unsigned n, unsigned offset);
+  static unsigned int toPosition(unsigned n, unsigned offset);
   /**
    * @brief Convert the absolute position to the page number and the offset.
    *

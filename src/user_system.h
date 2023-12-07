@@ -20,6 +20,8 @@ struct User {
 
   User();
 
+  explicit User(const char *bytes);
+
   static constexpr unsigned int byte_size() {
     return 3 * sizeof(Username_t) + sizeof(char);
   }
@@ -32,7 +34,7 @@ struct User {
 class UserSystem {
  private:
   const std::string file_prefix_;
-  external_memory::List<User> user_list_;
+  external_memory::List<User, true> user_list_;
   external_memory::Map<Username_t> user_id_to_id_;
   std::vector<User> login_stack_;
 

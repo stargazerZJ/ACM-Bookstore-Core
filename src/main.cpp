@@ -94,8 +94,8 @@ class Test {
       if (vec2.push_back(2)) pos1 = vec2.getPos();
       print_vector(vec2);
       vector<int> data = {3, 4, 5, 6, 7, 8, 9, 10};
-      cout << "vec2.rewrite(data)" << endl;
-      if (vec2.rewrite(std::move(data))) pos1 = vec2.getPos();
+      cout << "vec2.update(data)" << endl;
+      if (vec2.update(std::move(data))) pos1 = vec2.getPos();
       print_vector(vec2);
     }
   }
@@ -113,7 +113,7 @@ class Test {
       for (int j = 0; j < m; ++j) {
         data[j] = i * m + j;
       }
-      vec1.rewrite(std::move(data));
+      vec1.update(std::move(data));
       pos[i] = vec1.getPos();
     }
     for (int i = 0; i < n; ++i) {
@@ -141,7 +141,7 @@ class Test {
       for (int j = 0; j < m; ++j) {
         data[j] = i * m + j;
       }
-      vec1.rewrite(std::move(data));
+      vec1.update(std::move(data));
       pos[i] = vec1.getPos();
     }
     for (int i = 0; i < n; ++i) {
@@ -178,16 +178,16 @@ class Test {
       for (int j = 0; j < n; ++j) {
         data[j] = j;
       }
-      vec1.rewrite(std::move(data));
+      vec1.update(std::move(data));
       cout << "vec1.push_back(2)" << endl;
       vec1.push_back(2);
       n = 10;
-      cout << "Rewrite vec1 with size " << n << endl;
+      cout << "Update vec1 with size " << n << endl;
       data.resize(n);
       for (int j = 0; j < n; ++j) {
         data[j] = j;
       }
-      vec1.rewrite(std::move(data));
+      vec1.update(std::move(data));
 //      cout << "Delete vec1" << endl;
 //      vec1.del();
       print_vector(vec1);
@@ -207,7 +207,7 @@ class Test {
       for (int j = 0; j < m; ++j) {
         data[j] = i * m + j;
       }
-      vec1.rewrite(std::move(data));
+      vec1.update(std::move(data));
       pos[i] = vec1.getPos();
     }
     for (int i = 0; i < n; ++i) {
@@ -235,7 +235,7 @@ class Test {
       for (int j = 0; j < m; ++j) {
         data[j] = i * m + j;
       }
-      vec1.rewrite(std::move(data));
+      vec1.update(std::move(data));
       pos[i] = vec1.getPos();
     }
     for (int i = 0; i < n; ++i) {
@@ -292,7 +292,7 @@ class Test {
       for (auto it = vec.begin(); it != vec.end(); ++it) {
         if (*it == value) {
           vec.erase(it);
-          map_.rewrite(key, std::move(vec));
+          map_.update(key, std::move(vec));
           return;
         }
       }
@@ -326,7 +326,7 @@ class Test {
         }
         cout << endl;
       }
-//      map_.rewrite(key, std::move(vec));
+//      map_.update(key, std::move(vec));
     }
   };
 

@@ -290,7 +290,7 @@ unsigned int Map<Key>::getBucketId(const Hash_t &key) {
  * @details The multimap is based on extendible hashing.
  * @tparam Key The type of the key.
  * @attention Storing zero as value is undefined!
- * @attention There is way to erase a key-value pair. To erase a key-value pair, rewrite the vector of the key. For performance, it's recommended to erase lazily after calling `findAll`.
+ * @attention There is way to erase a key-value pair. To erase a key-value pair, update the vector of the key. For performance, it's recommended to erase lazily after calling `findAll`.
  * @attention The key must be hashable, and the uniformity of the hash function is important.
  * @attention No collision handling is implemented! To avoid collision, it's recommended to insert less than 1e6 keys.
  * @note The vector storage (i.e. Vectors) class is shared by all classes that use it. Therefore, it's passed as a reference to the constructor.
@@ -327,15 +327,15 @@ class MultiMap {
    */
   void erase(const Key &key);
   /**
-   * @brief Rewrite the vector of the key.
+   * @brief Update the vector of the key.
    * @details If the vector is empty, the key is erased.
    * @param key The key.
    * @param values The vector.
    */
-  void rewrite(const Key &key, std::vector<int> &&values = {});
+  void update(const Key &key, std::vector<int> &&values = {});
   /**
    * @brief Find all values of the key.
-   * @details The result may contain duplicated values as well as deleted values (as there is no way to erase a key-value pair). It's the user's responsibility to remove them. It's recommended to call `rewrite` to remove them in this multimap.
+   * @details The result may contain duplicated values as well as deleted values (as there is no way to erase a key-value pair). It's the user's responsibility to remove them. It's recommended to call `update` to remove them in this multimap.
    * @param key The key.
    * @return The result.
    */
@@ -355,10 +355,10 @@ void MultiMap<Key>::erase(const Key &key) {
   }
 }
 template<class Key>
-void MultiMap<Key>::rewrite(const Key &key, std::vector<int> &&values) {
+void MultiMap<Key>::update(const Key &key, std::vector<int> &&values) {
   unsigned int pos = vector_pos_.at(key);
   auto vector = vectors_.getVector(pos);
-  if (vector.rewrite(std::move(values))) {
+  if (vector.update(std::move(values))) {
     pos = vector.getPos();
     if (pos) vector_pos_[key] = pos;
     else vector_pos_.erase(key);

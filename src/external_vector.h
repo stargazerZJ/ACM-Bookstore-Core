@@ -227,7 +227,7 @@ class Vectors {
      * @attention The vector will be cleared before modifying.
      * @attention The change is committed to cache or file immediately.
      */
-    [[nodiscard]] bool rewrite(std::vector<int> &&data);
+    [[nodiscard]] bool update(std::vector<int> &&data);
     /**
      * @brief Delete the vector.
      * @return Whether the position of the vector has changed.

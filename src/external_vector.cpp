@@ -204,7 +204,7 @@ unsigned int Vectors::Vector::appendPage() {
   vectors_.setPageInfo(kPageInfo::kCapacity, page_id_, capacity + kIntegerPerPage);
   return new_page;
 }
-bool Vectors::Vector::rewrite(std::vector<int> &&data) {
+bool Vectors::Vector::update(std::vector<int> &&data) {
   if (data.empty()) {
     return del();
   }

@@ -22,6 +22,8 @@ struct Book {
 
   Book();
 
+  explicit Book(const char *bytes);
+
   static constexpr unsigned int byte_size() {
     return sizeof(ISBN_t) + 3 * sizeof(Title_t) + 2 * sizeof(unsigned int);
   }
