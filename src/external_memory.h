@@ -16,52 +16,173 @@ constexpr char kFileExtension[] = ".db";
 constexpr unsigned int kPageSize = 4096;
 static constexpr unsigned int kIntegerPerPage = kPageSize / sizeof(int); // number of integers in a page
 using Page = int[kIntegerPerPage]; // a page
-template<class T, unsigned info_len>
-class ListHelper {
- private:
-  std::string file_name_;
-  static constexpr unsigned int size_of_T_ = sizeof(T);
-  static constexpr unsigned int size_of_info_ = info_len * sizeof(unsigned int);
- public:
-  std::fstream file_;
-  explicit ListHelper(const std::string &file_name);
-
-  ~ListHelper();
-
-  void initialize(const std::string &file_name);
-
-  void get_info(unsigned n, int &dest);
-
-  void set_info(unsigned n, int value);
-
-  void read(unsigned n, T &dest);
-
-  void write(unsigned n, const T &value);
-};
+struct ListElementBase;
 template<class T>
+concept ListElement = requires(T t) {
+  { t.toBytes(nullptr) };
+  { t.fromBytes(nullptr) };
+  { T::byte_size() } -> std::convertible_to<unsigned int>;
+}
+    && std::is_constructible_v<T, const char *>
+    && (T::byte_size() >= sizeof(unsigned int));
+template<ListElement Elem, bool recover_space = true>
 class List {
  private:
-  unsigned int size_;
-  static constexpr unsigned int byte_size_ = T::byte_size();
-  using bytes = char[byte_size_];
-  ListHelper<bytes, 1> list_;
+  const std::string file_name_; // name (and path) of the file
+  std::fstream file_; // the file
+  static constexpr unsigned int byte_size_ = Elem::byte_size(); // size of each element when stored in external file, in bytes
+  static constexpr unsigned int data_begin_ = recover_space * sizeof(unsigned int); // the beginning of the data, in bytes
+  using bytes = char[byte_size_]; // a byte array
+  unsigned int size_ = 0; // the current maximum index of the elements
+  unsigned int free_head_ = 0; // the head of the free elements
+  bool cached_ = false;
+  std::vector<bytes> cache_;
+  void getHead(unsigned int n, unsigned int &dest);
+  void setHead(unsigned int n, unsigned int value);
  public:
-  explicit List(const std::string &file_name);
-
+  explicit List(const std::string &file_name = "list") : file_name_(file_name + kFileExtension) {};
   ~List();
-
-  void initialize(const std::string &file_name);
-
-  void read(unsigned n, T &dest);
-
-  void update(unsigned n, const T &value);
-
-//  void read_attr(unsigned n, unsigned offset, unsigned len, char *dest);
-//
-//  void update_attr(unsigned n, unsigned offset, unsigned len, const char *value);
-
-  unsigned insert(const T &value);
+  void initialize(bool reset = false);
+  void get(unsigned n, Elem &dest);
+  Elem get(unsigned n);
+  void update(unsigned n, const Elem &value);
+  unsigned int insert(const Elem &value);
+  void erase(unsigned n);
+  void cache();
+  void flush();
 };
+template<ListElement Elem, bool recover_space>
+void List<Elem, recover_space>::flush() {
+  if (cached_) {
+    file_.seekp(data_begin_, std::ios::beg);
+    for (unsigned int i = 0; i < size_; ++i) {
+      file_.write(cache_[i], byte_size_);
+    }
+    cached_ = false;
+  }
+}
+template<ListElement Elem, bool recover_space>
+void List<Elem, recover_space>::cache() {
+  if (!cached_) {
+    cache_.resize(size_);
+    file_.seekg(data_begin_, std::ios::beg);
+    for (unsigned int i = 0; i < size_; ++i) {
+      file_.read(cache_[i], byte_size_);
+    }
+    cached_ = true;
+  }
+}
+template<ListElement Elem, bool recover_space>
+void List<Elem, recover_space>::erase(unsigned int n) {
+  if constexpr (recover_space) {
+    setHead(n, free_head_);
+    free_head_ = n;
+  }
+}
+template<ListElement Elem, bool recover_space>
+void List<Elem, recover_space>::setHead(unsigned int n, unsigned int value) {
+  if (cached_) {
+    *reinterpret_cast<unsigned int *>(cache_[n]) = value;
+  } else {
+    file_.seekp(data_begin_ + n * sizeof(unsigned int), std::ios::beg);
+    file_.write(reinterpret_cast<char *>(&value), sizeof(unsigned int));
+  }
+}
+template<ListElement Elem, bool recover_space>
+void List<Elem, recover_space>::getHead(unsigned int n, unsigned int &dest) {
+  if (cached_) {
+    dest = *reinterpret_cast<unsigned int *>(cache_[n]);
+  } else {
+    file_.seekg(data_begin_ + n * sizeof(unsigned int), std::ios::beg);
+    file_.read(reinterpret_cast<char *>(&dest), sizeof(unsigned int));
+  }
+}
+template<ListElement Elem, bool recover_space>
+unsigned int List<Elem, recover_space>::insert(const Elem &value) {
+  if (!recover_space && free_head_ == 0) {
+    if (cached_) {
+      cache_.push_back(bytes());
+      value.toBytes(cache_.back());
+    } else {
+      file_.seekp(0, std::ios::end);
+      bytes tmp;
+      value.toBytes(tmp);
+      file_.write(tmp, byte_size_);
+    }
+    return size_++;
+  } else {
+    unsigned int n = free_head_;
+    getHead(free_head_, free_head_);
+    update(n, value);
+    return n;
+  }
+}
+template<ListElement Elem, bool recover_space>
+void List<Elem, recover_space>::update(unsigned int n, const Elem &value) {
+  if (cached_) {
+    value.toBytes(cache_[n]);
+  } else {
+    bytes tmp;
+    value.toBytes(tmp);
+    file_.seekp(data_begin_ + n * byte_size_, std::ios::beg);
+    file_.write(tmp, byte_size_);
+  }
+}
+template<ListElement T, bool recover_space>
+T List<T, recover_space>::get(unsigned int n) {
+  if (cached_) {
+    return T(cache_[n]);
+  } else {
+    bytes tmp;
+    file_.seekg(data_begin_ + n * byte_size_, std::ios::beg);
+    file_.read(tmp, byte_size_);
+    return T(tmp);
+  }
+}
+template<ListElement T, bool recover_space>
+void List<T, recover_space>::get(unsigned int n, T &dest) {
+  if (cached_) {
+    dest.fromBytes(cache_[n]);
+  } else {
+    bytes tmp;
+    file_.seekg(data_begin_ + n * byte_size_, std::ios::beg);
+    file_.read(tmp, byte_size_);
+    dest.fromBytes(tmp);
+  }
+}
+template<ListElement T, bool recover_space>
+void List<T, recover_space>::initialize(bool reset) {
+  if (reset) {
+    file_.open(file_name_, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+  } else {
+    file_.open(file_name_, std::ios::in | std::ios::out | std::ios::binary);
+  }
+  if (!file_.is_open()) {
+    throw std::runtime_error("Cannot open file " + file_name_);
+  }
+  if constexpr (recover_space) {
+    if (reset) {
+      free_head_ = 0;
+      file_.write(reinterpret_cast<char *>(&free_head_), sizeof(unsigned int));
+    } else {
+      file_.read(reinterpret_cast<char *>(&free_head_), sizeof(unsigned int));
+    }
+  }
+  if (reset) size_ = 0;
+  else {
+    file_.seekg(0, std::ios::end);
+    size_ = (static_cast<unsigned int>(file_.tellg()) - data_begin_) / byte_size_;
+  }
+}
+template<ListElement T, bool recover_space>
+List<T, recover_space>::~List() {
+  if constexpr (recover_space) {
+    file_.seekp(0);
+    file_.write(reinterpret_cast<char *>(&free_head_), sizeof(unsigned int));
+  }
+  flush();
+  file_.close();
+}
 /**
  * @brief A class for storing a list of integers in external memory.
  *
