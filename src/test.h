@@ -257,8 +257,8 @@ class Test {
   class MultiMapTest {
    private:
     const std::string file_name_;
-    external_memory::MultiMap<std::string> map_;
     external_memory::Vectors vectors_;
+    external_memory::MultiMap<std::string> map_;
    public:
     explicit MultiMapTest(const std::string &file_name)
         : file_name_(file_name), vectors_(file_name + "_data"), map_(file_name + "_map", vectors_) {}
