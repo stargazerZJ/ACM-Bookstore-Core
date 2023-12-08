@@ -5,22 +5,32 @@
 #ifndef BOOKSTORE_SRC_USER_SYSTEM_H_
 #define BOOKSTORE_SRC_USER_SYSTEM_H_
 
+#include "log.h"
 #include "external_memory.h"
 #include "external_hash_map.h"
+#include <string>
+#include <utility>
+#include <vector>
+#include <unordered_map>
 
 using Username_t = char[30];
 
 struct User {
-  unsigned id;
   std::string user_id;
   std::string password;
   std::string name;
-  unsigned privilege;
-  unsigned selected_id; // not stored in file
+  unsigned privilege = 0;
+  unsigned selected_id = 0; // not stored in file
 
-  User();
+  User() = default;
 
-  explicit User(const char *bytes);
+  User(std::string user_id,
+       std::string password,
+       std::string name,
+       unsigned privilege)
+      : user_id(std::move(user_id)), password(std::move(password)), name(std::move(name)), privilege(privilege) {}
+
+  explicit User(const char *bytes) { fromBytes(bytes); }
 
   static constexpr unsigned int byte_size() {
     return 3 * sizeof(Username_t) + sizeof(char);
@@ -35,38 +45,45 @@ class UserSystem {
  private:
   const std::string file_prefix_;
   external_memory::List<User, true> user_list_;
-  external_memory::Map<Username_t> user_id_to_id_;
-  std::vector<User> login_stack_;
+  external_memory::Map<std::string> user_id_to_id_;
+  std::vector<User> login_stack_; // A default user is always at the bottom of the stack
+  std::unordered_map<std::string, size_t> login_count_;
 
-  unsigned int find(const std::string &user_id) const;
+  unsigned int find(const std::string &user_id); // return 0 if not found
 
-  User get(unsigned int id) const;
+  User get(unsigned int id); // no bound check
 
-  const User &current_user() const;
+  User & current_user() const;
+
+  bool isLoggedIn(const std::string &user_id) const;
+
+  bool isLoggedIn() const;
 
  public:
-  UserSystem(std::string file_prefix = "");
+  explicit UserSystem(std::string file_prefix = "users")
+      : file_prefix_(std::move(file_prefix)), user_list_(file_prefix_ + "_list"),
+        user_id_to_id_(file_prefix_ + "_map") {}
 
-  ~UserSystem();
+  ~UserSystem() = default;
 
   void initialize(bool reset = false);
 
-  //TODO: change the return type to Exception
+  kExceptionType login(const std::string &user_id, const std::string &password);
 
-  bool login(const std::string &user_id, const std::string &password, bool force);
+  kExceptionType useradd(const std::string &user_id,
+                         const std::string &password,
+                         const std::string &name,
+                         int privilege);
 
-  bool useradd(const std::string &user_id, const std::string &password, const std::string &name, int privilege);
+  kExceptionType deluser(const std::string &user_id);
 
-  bool deluser(const std::string &user_id);
+  kExceptionType passwd(const std::string &user_id,
+                        const std::string &new_password,
+                        const std::string &old_password = "");
 
-  bool passwd(const std::string &user_id,
-              const std::string &new_password,
-              bool force,
-              const std::string &old_password = "");
+  kExceptionType logout();
 
-  bool logout();
-
-  unsigned getPrivilege() const;
+  unsigned int getPrivilege() const;
 
   std::string getUserId() const;
 
@@ -74,7 +91,7 @@ class UserSystem {
 
   unsigned int getSelectedId() const;
 
-  bool select(unsigned int id);
+  void select(unsigned int id);
 };
 
 #endif //BOOKSTORE_SRC_USER_SYSTEM_H_
