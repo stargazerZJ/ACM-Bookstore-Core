@@ -43,6 +43,7 @@ kExceptionType Book::regularizeKeywords(std::string &keywords) {
                              [](const std::string &a, const std::string &b) {
                                return a + '|' + b;
                              });
+  return kExceptionType::K_SUCCESS;
 }
 bool Book::hasKeyword(const std::string &keywords, const std::string &keyword) {
   auto keywords_vec = unpackKeywords(keywords);
@@ -99,6 +100,7 @@ kExceptionType BookSystem::modify(unsigned int id, const Book &old, const Book &
     }
   }
   book_list_.set(id, new_book);
+  return kExceptionType::K_SUCCESS;
 }
 BookSystem::SearchResult BookSystem::searchByISBN(const std::string &ISBN) {
   return {std::vector<Book>{get(find(ISBN))}};
@@ -189,4 +191,5 @@ BookSystem::SearchResult &BookSystem::SearchResult::filter(const Book &params) {
 //          book.price != params.price ||
 //          book.quantity != params.quantity;
   });
+  return *this;
 }
