@@ -110,7 +110,7 @@ struct Book {
  */
 class BookSystem {
  private:
-  const std::string file_prefix_; // the prefix (and path) of the files storing the information of books
+  const std::string file_prefix_; // the prefix (including path) of the files storing the information of books
   external_memory::List<Book, false> book_list_; // the list of books
   external_memory::Map<std::string> ISBN_to_id_; // the map from ISBN to ID
   external_memory::MultiMap<std::string> title_to_id_; // the map from title to ID
