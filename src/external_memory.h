@@ -16,13 +16,12 @@ constexpr char kFileExtension[] = ".db";
 constexpr unsigned int kPageSize = 4096;
 static constexpr unsigned int kIntegerPerPage = kPageSize / sizeof(int); // number of integers in a page
 using Page = int[kIntegerPerPage]; // a page
-struct ListElementBase;
 template<class T>
 concept ListElement = requires(T t) {
-  { t.toBytes(nullptr) };
   { t.fromBytes(nullptr) };
   { T::byte_size() } -> std::convertible_to<unsigned int>;
 }
+    && requires(const T t) { t.toBytes(nullptr); }
     && std::is_constructible_v<T, const char *>
     && (T::byte_size() >= sizeof(unsigned int));
 /**
@@ -44,13 +43,19 @@ class List {
  private:
   const std::string file_name_; // name (and path) of the file
   std::fstream file_; // the file
-  static constexpr unsigned int byte_size_ = Elem::byte_size(); // size of each element when stored in external file, in bytes
-  static constexpr unsigned int data_begin_ = recover_space * sizeof(unsigned int); // the beginning of the data, in bytes
-  using bytes = char[byte_size_]; // a byte array
+  static constexpr unsigned int
+      byte_size_ = Elem::byte_size(); // size of each element when stored in external file, in bytes
+  static constexpr unsigned int
+      data_begin_ = recover_space * sizeof(unsigned int); // the beginning of the data, in bytes
+  struct Bytes {
+    char data[byte_size_];
+    Bytes() = default;
+    explicit Bytes(const Elem &elem) { elem.toBytes(data); }
+  }; // a byte array
   unsigned int size_ = 0; // the current maximum index of the elements
   unsigned int free_head_ = 0; // the head of the free elements
   bool cached_ = false; // whether the whole list is cached
-  std::vector<bytes> cache_; // the cache
+  std::vector<Bytes> cache_; // the cache
   void getHead(unsigned int n, unsigned int &dest); // get the first 4 bytes of the n-th element
   void setHead(unsigned int n, unsigned int value); // set the first 4 bytes of the n-th element
  public:
@@ -137,7 +142,7 @@ void List<Elem, recover_space>::flush() {
   if (cached_) {
     file_.seekp(data_begin_, std::ios::beg);
     for (unsigned int i = 0; i < size_; ++i) {
-      file_.write(cache_[i], byte_size_);
+      file_.write(cache_[i].data, byte_size_);
     }
     cached_ = false;
   }
@@ -148,7 +153,7 @@ void List<Elem, recover_space>::cache() {
     cache_.resize(size_);
     file_.seekg(data_begin_, std::ios::beg);
     for (unsigned int i = 0; i < size_; ++i) {
-      file_.read(cache_[i], byte_size_);
+      file_.read(cache_[i].data, byte_size_);
     }
     cached_ = true;
   }
@@ -163,7 +168,7 @@ void List<Elem, recover_space>::erase(unsigned int n) {
 template<ListElement Elem, bool recover_space>
 void List<Elem, recover_space>::setHead(unsigned int n, unsigned int value) {
   if (cached_) {
-    *reinterpret_cast<unsigned int *>(cache_[n - 1]) = value;
+    *reinterpret_cast<unsigned int *>(cache_[n - 1].data) = value;
   } else {
     file_.seekp(data_begin_ + (n - 1) * sizeof(unsigned int), std::ios::beg);
     file_.write(reinterpret_cast<char *>(&value), sizeof(unsigned int));
@@ -172,7 +177,7 @@ void List<Elem, recover_space>::setHead(unsigned int n, unsigned int value) {
 template<ListElement Elem, bool recover_space>
 void List<Elem, recover_space>::getHead(unsigned int n, unsigned int &dest) {
   if (cached_) {
-    dest = *reinterpret_cast<unsigned int *>(cache_[n - 1]);
+    dest = *reinterpret_cast<unsigned int *>(cache_[n - 1].data);
   } else {
     file_.seekg(data_begin_ + (n - 1) * sizeof(unsigned int), std::ios::beg);
     file_.read(reinterpret_cast<char *>(&dest), sizeof(unsigned int));
@@ -182,53 +187,50 @@ template<ListElement Elem, bool recover_space>
 unsigned int List<Elem, recover_space>::insert(const Elem &value) {
   if (!recover_space && free_head_ == 0) {
     if (cached_) {
-      cache_.push_back();
-      value.toBytes(cache_.back());
+      cache_.emplace_back(value);
     } else {
       file_.seekp(0, std::ios::end);
-      bytes tmp;
-      value.toBytes(tmp);
-      file_.write(tmp, byte_size_);
+      Bytes tmp(value);
+      file_.write(tmp.data, byte_size_);
     }
     return ++size_;
   } else {
     unsigned int n = free_head_;
     getHead(free_head_, free_head_);
-    update(n, value);
+    set(n, value);
     return n;
   }
 }
 template<ListElement Elem, bool recover_space>
 void List<Elem, recover_space>::set(unsigned int n, const Elem &value) {
   if (cached_) {
-    value.toBytes(cache_[n - 1]);
+    value.toBytes(cache_[n - 1].data);
   } else {
-    bytes tmp;
-    value.toBytes(tmp);
+    Bytes tmp(value);
     file_.seekp(data_begin_ + (n - 1) * byte_size_, std::ios::beg);
-    file_.write(tmp, byte_size_);
+    file_.write(tmp.data, byte_size_);
   }
 }
 template<ListElement T, bool recover_space>
 T List<T, recover_space>::get(unsigned int n) {
   if (cached_) {
-    return T(cache_[n - 1]);
+    return T(cache_[n - 1].data);
   } else {
-    bytes tmp;
+    Bytes tmp;
     file_.seekg(data_begin_ + (n - 1) * byte_size_, std::ios::beg);
-    file_.read(tmp, byte_size_);
-    return T(tmp);
+    file_.read(tmp.data, byte_size_);
+    return T(tmp.data);
   }
 }
 template<ListElement T, bool recover_space>
 void List<T, recover_space>::get(unsigned int n, T &dest) {
   if (cached_) {
-    dest.fromBytes(cache_[n - 1]);
+    dest.fromBytes(cache_[n - 1].data);
   } else {
-    bytes tmp;
+    Bytes tmp;
     file_.seekg(data_begin_ + (n - 1) * byte_size_, std::ios::beg);
-    file_.read(tmp, byte_size_);
-    dest.fromBytes(tmp);
+    file_.read(tmp.data, byte_size_);
+    dest.fromBytes(tmp.data);
   }
 }
 template<ListElement T, bool recover_space>
