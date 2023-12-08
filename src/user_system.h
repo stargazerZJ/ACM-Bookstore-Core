@@ -26,7 +26,7 @@ struct User {
     return 3 * sizeof(Username_t) + sizeof(char);
   }
 
-  void toBytes(char *dest);
+  void toBytes(char *dest) const;
 
   void fromBytes(const char *src);
 };
