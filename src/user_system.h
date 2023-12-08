@@ -53,7 +53,8 @@ class UserSystem {
 
   User get(unsigned int id); // no bound check
 
-  User & current_user() const;
+  const User & current_user() const;
+  User & current_user() ;
 
   bool isLoggedIn(const std::string &user_id) const;
 

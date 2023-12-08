@@ -21,7 +21,10 @@ unsigned int UserSystem::find(const std::string &user_id) {
 User UserSystem::get(unsigned int id) {
   return user_list_.get(id);
 }
-User & UserSystem::current_user() const {
+const User & UserSystem::current_user() const {
+  return login_stack_.back();
+}
+User & UserSystem::current_user() {
   return login_stack_.back();
 }
 bool UserSystem::isLoggedIn(const std::string &user_id) const {
