@@ -105,7 +105,8 @@ struct Book {
  * @details 5. search: search books by ISBN, title, author or keyword
  * @details The information of books is stored in external memory.
  * @details The BookSystem class uses external_memory::List, external_memory::Map, external_memory::MultiMap and external_memory::Vectors to store the information of books. The external_memory::Vectors is shared with other systems.
- * @details The external_memory::MultiMap may contain duplicated or erased items because modifying doesn't erase the items immediately. They are lazily removed by `searchByTitle` etc.
+ * @details The external_memory::MultiMap may contain duplicated or erased items because modifying doesn't erase the items immediately. They are lazily removed by `searchByTitle`, `searchByAuthor` and `searchByKeyword`.
+ * @attention The BookSystem class must be initialized before using.
  */
 class BookSystem {
  private:
@@ -120,6 +121,7 @@ class BookSystem {
     std::vector<Book> books;
 
     SearchResult &filter(const Book &params); // ISBN is not considered here
+    SearchResult &sort(); // sort by ISBN
   };
 
   SearchResult searchByISBN(const std::string &ISBN);
@@ -127,6 +129,11 @@ class BookSystem {
   SearchResult searchByAuthor(const std::string &author); // Also removes the duplicated and erased items in author_to_id_
   SearchResult searchByKeyword(const std::string &keyword); // There must be only one keyword, which is not checked here. Also removes the duplicated and erased items in keyword_to_id_
  public:
+  /**
+   * @brief Construct a new BookSystem object
+   * @param file_prefix The prefix (and path) of the files storing the information of books
+   * @param vectors The vectors used by external memory, shared with other systems
+   */
   BookSystem(std::string file_prefix, external_memory::Vectors &vectors)
       : file_prefix_(std::move(file_prefix)), book_list_(file_prefix_ + "_list"),
         ISBN_to_id_(file_prefix_ + "_ISBN"),
@@ -134,13 +141,56 @@ class BookSystem {
         author_to_id_(file_prefix_ + "_author", vectors),
         keyword_to_id_(file_prefix_ + "_keyword", vectors),
         vectors_(vectors) {}
-
+  /**
+   * @brief Destroy the BookSystem object
+   */
   ~BookSystem() = default;
+  /**
+   * @brief Initialize the BookSystem object
+   * @param reset Whether to reset the BookSystem object
+   * @attention vectors_ must be initialized before calling this function, no matter whether reset is true or not.
+   * @attention This function must not be called twice.
+   * @attention If reset is true, all the information of books will be lost.
+   */
   void initialize(bool reset = false);
+  /**
+   * @brief Find a book by ISBN
+   * @param ISBN The ISBN of the book
+   * @return unsigned int The ID of the book
+   * @return 0 if the book is not found
+   */
   [[nodiscard]] unsigned int find(const std::string &ISBN); // return ID of the book, if not found, return 0
+  /**
+   * @brief Get a book by ID
+   * @param id The ID of the book
+   * @return Book The book
+   */
   [[nodiscard]] Book get(unsigned int id); // no bound checking
+  /**
+   * @brief Select a book by ISBN
+   * @param ISBN The ISBN of the book
+   * @return unsigned int The ID of the book
+   * @details If the book is not found, create a new book and return its ID.
+   */
   [[nodiscard]] unsigned int select(const std::string &ISBN); // return ID of the book, if not found, create a new book and return its ID
+  /**
+   * @brief Modify a book
+   * @param id The ID of the book
+   * @param old The old information of the book
+   * @param new_book The new information of the book
+   * @return K_SUCCESS if the book is modified successfully
+   * @return K_DUPLICATED_ISBN if the ISBN of the book is duplicated
+   * @details The information of the book is modified in external memory.
+   * @details The information of the book is modified in external_memory::List, external_memory::Map, external_memory::MultiMap and external_memory::Vectors.
+   * @details The external_memory::MultiMap may contain duplicated or erased items because modifying doesn't erase the items immediately. They are lazily removed by `searchByTitle`, `searchByAuthor` and `searchByKeyword`.
+   */
   [[nodiscard]] kExceptionType modify(unsigned int id, const Book &old, const Book &new_book);
+  /**
+   * @brief Search books by ISBN, title, author or keyword
+   * @param params The parameters of the book
+   * @return std::vector<Book> The books
+   * @details The result is sorted by ISBN.
+   */
   [[nodiscard]] std::vector<Book> search(const Book &params);
 };
 

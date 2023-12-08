@@ -179,8 +179,7 @@ std::vector<Book> BookSystem::search(const Book &params) {
   } else if (!params.keywords.empty()) {
     result = searchByKeyword(params.keywords);
   }
-  result.filter(params);
-  return result.books;
+  return result.filter(params).sort().books;
 }
 BookSystem::SearchResult &BookSystem::SearchResult::filter(const Book &params) {
   std::erase_if(books, [&params](const Book &book) {
@@ -190,6 +189,12 @@ BookSystem::SearchResult &BookSystem::SearchResult::filter(const Book &params) {
             !params.keywords.empty() && book.keywords != params.keywords;
 //          book.price != params.price ||
 //          book.quantity != params.quantity;
+  });
+  return *this;
+}
+BookSystem::SearchResult &BookSystem::SearchResult::sort() {
+  std::sort(books.begin(), books.end(), [](const Book &a, const Book &b) {
+    return a.ISBN < b.ISBN;
   });
   return *this;
 }
