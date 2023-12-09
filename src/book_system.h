@@ -191,6 +191,7 @@ class BookSystem {
    * @param params The parameters of the book
    * @return std::vector<Book> The books
    * @details The result is sorted by ISBN.
+   * @attention If multiple search conditions are provided, all but the first one are ignored.
    */
   [[nodiscard]] std::vector<Book> search(const Book &params);
   //TODO: only allow searching by zero or one parameter
