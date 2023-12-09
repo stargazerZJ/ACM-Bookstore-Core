@@ -107,10 +107,11 @@ class List {
   void set(unsigned n, const Elem &value);
   /**
    * @brief Insert a new element.
+   * @details If `recover_space` is `false`, the new element is appended to the end of the list.
    * @param value The value to be inserted.
    * @return unsigned int The index of the new element, 1-based.
    */
-  [[nodiscard]] unsigned int insert(const Elem &value);
+  unsigned int insert(const Elem &value);
   /**
    * @brief Erase the i-th element.
    * @details
@@ -136,6 +137,12 @@ class List {
    * Subsequent operations will be performed on the file.
    */
   void flush();
+  /**
+   * @brief Get the current maximum index of the elements, 1-based. When `recover_space` is `false`, this is the size of the list.
+   *
+   * @return unsigned int The current maximum index of the elements, 1-based.
+   */
+  [[nodiscard]] unsigned int size() const { return size_; }
 };
 template<ListElement Elem, bool recover_space>
 void List<Elem, recover_space>::flush() {
