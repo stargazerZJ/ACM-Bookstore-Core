@@ -71,6 +71,7 @@ class BookStore {
    * @return K_USER_NOT_FOUND if the user is not found
    * @return K_WRONG_PASSWORD if the password is provided but wrong
    * @return K_PERMISSION_DENIED if the password is not provided but the privilege of the current user is less than the privilege of the user
+   * @return K_INVALID_PARAMETER if the user ID or password is invalid
    */
   kExceptionType login(const std::string &user_id, const std::string &password = "");
   /**
@@ -90,6 +91,7 @@ class BookStore {
    * @return K_SUCCESS if add successfully
    * @return K_USER_ALREADY_EXISTS if the user already exists
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than the privilege of the user to be added
+   * @return K_INVALID_PARAMETER if the user ID, password, name or privilege is invalid
    */
   kExceptionType useradd(const std::string &user_id,
                          const std::string &password,
@@ -105,6 +107,7 @@ class BookStore {
    * @return kExceptionType
    * @return K_SUCCESS if add successfully
    * @return K_USER_ALREADY_EXISTS if the user already exists
+   * @return K_INVALID_PARAMETER if the user ID, password or name is invalid
    */
   kExceptionType customerUseradd(const std::string &user_id, const std::string &password, const std::string &name);
   /**
@@ -117,6 +120,7 @@ class BookStore {
    * @return K_USER_NOT_FOUND if the user is not found
    * @return K_WRONG_PASSWORD if the old password is provided but wrong
    * @return K_PERMISSION_DENIED if the old password is not provided but the privilege of the current user is less than 7
+   * @return K_INVALID_PARAMETER if the user ID, new password or old password is invalid
    */
   kExceptionType passwd(const std::string &user_id,
                         const std::string &new_password,
@@ -127,6 +131,7 @@ class BookStore {
    * @return K_SUCCESS if delete successfully
    * @return K_USER_NOT_FOUND if the user is not found
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 7
+   * @return K_INVALID_PARAMETER if the user ID is invalid
    */
   kExceptionType deluser(const std::string &user_id);
   /**
@@ -135,6 +140,7 @@ class BookStore {
    * @return kExceptionType
    * @return K_SUCCESS if search successfully
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 1
+   * @return K_INVALID_PARAMETER if the parameters are invalid
    */
   std::pair<kExceptionType, std::vector<Book>> search(const Book &params);
   /**
@@ -144,6 +150,7 @@ class BookStore {
    * @return K_SUCCESS if select successfully
    * @return K_BOOK_NOT_FOUND if the book is not found
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 3
+   * @return K_INVALID_PARAMETER if the ISBN is invalid
    */
   kExceptionType select(const std::string &ISBN);
   /**
@@ -154,6 +161,7 @@ class BookStore {
    * @return K_NO_SELECTED_BOOK if no book is selected
    * @return K_SAME_ISBN if the ISBN of the book is the same as the old one
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 3
+   * @return K_INVALID_PARAMETER if the ISBN, title, author or keyword is invalid
    */
   kExceptionType modify(Book &&new_book);
   /**
@@ -163,6 +171,7 @@ class BookStore {
    * @return kExceptionType
    * @return K_SUCCESS if import successfully
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 3
+   * @return K_INVALID_PARAMETER if the quantity or cost is invalid
    */
   kExceptionType import_(unsigned int quantity, unsigned long long int cost);
   /**
@@ -174,6 +183,7 @@ class BookStore {
    * @return K_BOOK_NOT_FOUND if the book is not found
    * @return K_NOT_ENOUGH_INVENTORY if the inventory of the book is not enough
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 1
+   * @return K_INVALID_PARAMETER if the ISBN or quantity is invalid
    */
   std::pair<kExceptionType, unsigned long long> purchase(const std::string &ISBN, unsigned int quantity);
   /**
