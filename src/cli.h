@@ -9,13 +9,20 @@
 #include "bookstore.h"
 #include "parser.h"
 
+/**
+ * @brief The BookStoreCLI class
+ * @details The BookStoreCLI class is used to interact with users.
+ * @details The BookStoreCLI class is used to parse commands and call the corresponding functions.
+ * @details The BookStoreCLI class is used to print the results.
+ * @attention `initialize` must be called before using the BookStoreCLI.
+ */
 class BookStoreCLI {
  private:
-  const std::string file_path_;
-  BookStore book_store_;
+  const std::string file_path_; // the path of the database files
+  BookStore book_store_; // the bookstore
   std::istream &is = std::cin;
   std::ostream &os = std::cout;
-  static inline constexpr char endl[] = "\n";
+  static inline constexpr char endl[] = "\n"; // use "\n" instead of std::endl to increase the speed
   using Args = std::vector<std::string>;
   using Func = kExceptionType (BookStoreCLI::*)(const Args &args);
 
@@ -60,12 +67,17 @@ class BookStoreCLI {
   kExceptionType invalidCommand(const Args &args);
   void runCommand(const Args &args, Func func);
  public:
+  /// \brief Construct a new BookStoreCLI object
   explicit BookStoreCLI(std::string file_path = "") : file_path_(std::move(file_path)) {}
-
+  /// \brief Destroy the BookStoreCLI object
   ~BookStoreCLI() = default;
-
+  /// \brief Initialize the BookStoreCLI object
+  /// \param force_reset Whether to reset the BookStoreCLI object
+  /// \attention This function must be called before using any other functions.
+  /// \attention This function must not be called twice.
   void initialize(bool force_reset = false);
-
+  /// \brief Run the BookStoreCLI object
+  /// \details This function will keep reading commands from `is` and print the results to `os` until `exit`, `quit` or EOF is read.
   void run();
 };
 
