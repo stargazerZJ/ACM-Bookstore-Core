@@ -194,7 +194,6 @@ class BookSystem {
    * @attention If multiple search conditions are provided, all but the first one are ignored.
    */
   [[nodiscard]] std::vector<Book> search(const Book &params);
-  //TODO: only allow searching by zero or one parameter
 };
 
 #endif //BOOKSTORE_SRC_BOOK_SYSTEM_H_

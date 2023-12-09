@@ -81,32 +81,31 @@ kExceptionType BookStore::select(const std::string &ISBN) {
   return user_system_.select(id);
 }
 kExceptionType BookStore::modify(Book &&new_book) {
-  if (!validator::isValidISBN(new_book.ISBN)) return kExceptionType::K_INVALID_PARAMETER;
-  if (!validator::isValidBookName(new_book.title)) return kExceptionType::K_INVALID_PARAMETER;
-  if (!validator::isValidAuthor(new_book.author)) return kExceptionType::K_INVALID_PARAMETER;
-  if (!validator::isValidKeyword(new_book.keywords)) return kExceptionType::K_INVALID_PARAMETER;
   if (user_system_.getPrivilege() < 3)
     return kExceptionType::K_PERMISSION_DENIED; // privilege check: the privilege of the current user must be greater than 3
   auto selected_id = user_system_.getSelectedId();
   if (!selected_id) return kExceptionType::K_NO_SELECTED_BOOK;
   Book old_book = book_system_.get(selected_id);
   if (new_book.ISBN.empty()) {
+    if (!validator::isValidISBN(new_book.ISBN)) return kExceptionType::K_INVALID_PARAMETER;
     new_book.ISBN = old_book.ISBN;
   } else {
     if (new_book.ISBN == old_book.ISBN) return kExceptionType::K_SAME_ISBN;
   }
   if (new_book.title.empty()) {
     new_book.title = old_book.title;
+  } else {
+    if (!validator::isValidBookName(new_book.title)) return kExceptionType::K_INVALID_PARAMETER;
   }
   if (new_book.author.empty()) {
     new_book.author = old_book.author;
+  } else {
+    if (!validator::isValidAuthor(new_book.author)) return kExceptionType::K_INVALID_PARAMETER;
   }
   if (new_book.keywords.empty()) {
     new_book.keywords = old_book.keywords;
   } else {
-    //TODO: don't sort the keywords
-    auto result = Book::regularizeKeywords(new_book.keywords);
-    if (result != kExceptionType::K_SUCCESS) return result;
+    if (!validator::isValidKeyword(new_book.keywords)) return kExceptionType::K_INVALID_PARAMETER;
   }
   if (new_book.price == -1) {
     new_book.price = old_book.price;

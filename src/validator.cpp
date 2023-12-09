@@ -34,7 +34,10 @@ bool isValidAuthor(const std::string &author) {
   return isValidBookName(author);
 }
 bool isValidKeyword(const std::string &keyword) {
-  return isValidBookName(keyword);
+  if (!isValidBookName(keyword)) return false;
+  auto keywords_vec = Book::unpackKeywords(keyword);
+  if (std::unique(keywords_vec.begin(), keywords_vec.end()) != keywords_vec.end()) return false;
+  return true;
 }
 bool isValidSingleKeyword(const std::string &keyword) {
   if (!isValidKeyword(keyword)) return false;

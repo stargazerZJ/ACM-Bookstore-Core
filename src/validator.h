@@ -70,12 +70,11 @@ bool isValidAuthor(const std::string &author);
 /**
  * @brief Check whether a list of keywords is valid
  * @details The keyword should be a non-empty string consisting of visible characters except '"'.
+ * @details Keywords should not be duplicated.
  * @details The maximum length of the keyword is 60.
  * @note Multiple keywords are separated by '|'.
  * @param keyword
  * @return Whether the keyword is valid
- * @attention This function does not check whether the keywords are duplicated.
- * @attention Before storing the keywords, you should call `Book::regularizeKeywords` to regularize the keywords.
  */
 bool isValidKeyword(const std::string &keyword);
 /**

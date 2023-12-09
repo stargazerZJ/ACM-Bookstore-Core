@@ -33,6 +33,7 @@ std::vector<std::string> Book::unpackKeywords(const std::string &keywords) {
     result.push_back(keywords.substr(start, end - start));
     start = end + 1;
   }
+  std::sort(result.begin(), result.end());
   return result;
 }
 kExceptionType Book::regularizeKeywords(std::string &keywords) {
@@ -199,7 +200,7 @@ BookSystem::SearchResult &BookSystem::SearchResult::filter(const Book &params) {
     return // !params.ISBN.empty() && book.ISBN != params.ISBN ||
         !params.title.empty() && book.title != params.title ||
             !params.author.empty() && book.author != params.author ||
-            !params.keywords.empty() && book.keywords != params.keywords;
+            !params.keywords.empty() && !Book::hasKeyword(book.keywords, params.keywords);
 //          book.price != params.price ||
 //          book.quantity != params.quantity;
   });
