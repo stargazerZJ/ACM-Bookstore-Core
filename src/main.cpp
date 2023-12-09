@@ -3,10 +3,19 @@
 //
 
 #include <iostream>
-#include "test.h"
-#include <cassert>
+#include <string>
+//#include "test.h"
+//#include <cassert>
+#include "cli.h"
 
 int main() {
-  while (Test::test_multimap());
+#ifdef LOCAL
+  static const std::string path = "../db/";
+#else
+  static inline const string path = "./";
+#endif
+  BookStoreCLI cli(path);
+  cli.initialize();
+  cli.run();
   return 0;
 }

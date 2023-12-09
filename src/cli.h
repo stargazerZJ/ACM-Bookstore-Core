@@ -68,7 +68,7 @@ class BookStoreCLI {
   void runCommand(const Args &args, Func func);
  public:
   /// \brief Construct a new BookStoreCLI object
-  explicit BookStoreCLI(std::string file_path = "") : file_path_(std::move(file_path)) {}
+  explicit BookStoreCLI(std::string file_path = "") : file_path_(std::move(file_path)), book_store_(file_path_ + "bookstore") {}
   /// \brief Destroy the BookStoreCLI object
   ~BookStoreCLI() = default;
   /// \brief Initialize the BookStoreCLI object
