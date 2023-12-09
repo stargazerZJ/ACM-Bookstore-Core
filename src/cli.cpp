@@ -129,6 +129,7 @@ kExceptionType BookStoreCLI::buy(const BookStoreCLI::Args &args) {
   auto result = book_store_.purchase(args[0], ret.second);
   if (result.first != kExceptionType::K_SUCCESS) return result.first;
   os << printMoney(result.second) << endl;
+  return kExceptionType::K_SUCCESS;
 }
 std::string BookStoreCLI::printMoney(unsigned long long int money) {
   std::ostringstream oss;
@@ -189,9 +190,7 @@ kExceptionType BookStoreCLI::import_(const BookStoreCLI::Args &args) {
     if (ret.first != kExceptionType::K_SUCCESS) return ret.first;
     cost = ret.second;
   }
-  auto result = book_store_.import_(quantity, cost);
-  if (result.first != kExceptionType::K_SUCCESS) return result.first;
-  os << printMoney(result.second) << endl;
+  return book_store_.import_(quantity, cost);
 }
 kExceptionType BookStoreCLI::showFinance(const BookStoreCLI::Args &args) {
   if (args.size() > 1) return kExceptionType::K_INVALID_PARAMETER;
