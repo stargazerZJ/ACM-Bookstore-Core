@@ -225,4 +225,7 @@ void Pages::setInfo(unsigned int n, int value) {
 int &Pages::getInfo(unsigned int n) {
   return info_[n];
 }
+std::string strNRead(const char *src, unsigned int n) {
+  return {src, strnlen(src, n)};
+}
 } // namespace external_memory

@@ -192,7 +192,7 @@ void List<Elem, recover_space>::getHead(unsigned int n, unsigned int &dest) {
 }
 template<ListElement Elem, bool recover_space>
 unsigned int List<Elem, recover_space>::insert(const Elem &value) {
-  if (!recover_space && free_head_ == 0) {
+  if (!recover_space || free_head_ == 0) {
     if (cached_) {
       cache_.emplace_back(value);
     } else {
@@ -557,6 +557,7 @@ class Pages {
    */
   void deletePage(unsigned int n);
 };
+std::string strNRead(const char *src, unsigned int n);
 
 } // namespace external_memory
 

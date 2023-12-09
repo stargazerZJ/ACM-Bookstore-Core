@@ -26,6 +26,8 @@ enum class kExceptionType {
   K_NOT_ENOUGH_RECORDS
 };
 
+std::string exceptionTypeToString(kExceptionType exception_type);
+
 /// @brief The finance record
 class FinanceRecord {
   unsigned long long int income_sum_ = 0; // in cents
@@ -47,7 +49,7 @@ class FinanceRecord {
   /// @param money The amount of money
   /// @details If `money` is positive, it is regarded as income, otherwise it is regarded as expenditure.
   /// @return FinanceRecord& The reference of the current FinanceRecord
-  FinanceRecord &log(unsigned long long int money);
+  FinanceRecord &log(long long int money);
 };
 
 /**

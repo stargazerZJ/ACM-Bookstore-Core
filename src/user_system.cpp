@@ -10,9 +10,12 @@ void User::toBytes(char *dest) const {
   dest[3 * sizeof(Username_t)] = static_cast<char>(privilege);
 }
 void User::fromBytes(const char *src) {
-  user_id = std::string(src, sizeof(Username_t));
-  password = std::string(src + sizeof(Username_t), sizeof(Username_t));
-  name = std::string(src + 2 * sizeof(Username_t), sizeof(Username_t));
+//  user_id = std::string(src, sizeof(Username_t));
+//  password = std::string(src + sizeof(Username_t), sizeof(Username_t));
+//  name = std::string(src + 2 * sizeof(Username_t), sizeof(Username_t));
+  user_id = external_memory::strNRead(src, sizeof(Username_t));
+  password = external_memory::strNRead(src + sizeof(Username_t), sizeof(Username_t));
+  name = external_memory::strNRead(src + 2 * sizeof(Username_t), sizeof(Username_t));
   privilege = static_cast<unsigned char>(src[3 * sizeof(Username_t)]);
 }
 unsigned int UserSystem::find(const std::string &user_id) {
@@ -31,16 +34,14 @@ bool UserSystem::isLoggedIn(const std::string &user_id) const {
   return login_count_.contains(user_id);
 }
 bool UserSystem::isLoggedIn() const {
-  return login_stack_.size() <= 1;
+  return login_stack_.size() > 1;
 }
 void UserSystem::initialize(bool reset) {
   user_list_.initialize(reset);
   user_id_to_id_.initialize(reset);
-  if (reset) {
-    login_stack_.clear();
-    login_stack_.emplace_back();
-    login_count_.clear();
-  }
+  login_stack_.clear();
+  login_stack_.emplace_back();
+  login_count_.clear();
 }
 kExceptionType UserSystem::login(const std::string &user_id, const std::string &password) {
   unsigned int id = find(user_id);

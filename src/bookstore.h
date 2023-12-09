@@ -55,6 +55,7 @@ class BookStore {
    * @brief Initialize the BookStore object
    * @details This function initializes the BookStore object and the external memory.
    * @details If `force_reset` is false, the database will not be reset if it exists.
+   * @details If the database is reset, a root user with user ID "root", password "sjtu" and privilege 7 will be added.
    * @param force_reset Whether to reset the BookStore object
    * @attention This function must be called before using any other functions.
    * @attention This function must not be called twice.
@@ -144,11 +145,10 @@ class BookStore {
    */
   std::pair<kExceptionType, std::vector<Book>> search(const Book &params);
   /**
-   * @brief Select a book
+   * @brief Select a book, if the book is not found, create a new book
    * @param ISBN The ISBN of the book
    * @return kExceptionType
    * @return K_SUCCESS if select successfully
-   * @return K_BOOK_NOT_FOUND if the book is not found
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 3
    * @return K_INVALID_PARAMETER if the ISBN is invalid
    */

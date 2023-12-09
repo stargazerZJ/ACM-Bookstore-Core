@@ -83,6 +83,13 @@ bool isValidKeyword(const std::string &keyword);
  * @return Whether the keyword is valid
  */
 bool isValidSingleKeyword(const std::string &keyword);
+/**
+ * @brief Check whether the quantity is valid
+ * @details The quantity should be greater than 0.
+ * @param quantity
+ * @return Whether the quantity is valid
+ */
+bool isValidQuantity(unsigned int quantity);
 
 } // namespace validator
 

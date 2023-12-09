@@ -8,14 +8,11 @@
 //#include <cassert>
 #include "cli.h"
 
-int main() {
-#ifdef LOCAL
-  static const std::string path = "../db/";
-#else
-  static inline const string path = "./";
-#endif
+int main(int argc, char *argv[]) {
+  std::string path = "./";
+  if (argc > 1) path = argv[1];
   BookStoreCLI cli(path);
-  cli.initialize();
+  cli.initialize(false);
   cli.run();
   return 0;
 }

@@ -14,10 +14,14 @@ void Book::toBytes(char *dest) const {
       quantity;
 }
 void Book::fromBytes(const char *src) {
-  ISBN = std::string(src, sizeof(ISBN_t));
-  title = std::string(src + sizeof(ISBN_t), sizeof(Title_t));
-  author = std::string(src + sizeof(ISBN_t) + sizeof(Title_t), sizeof(Title_t));
-  keywords = std::string(src + sizeof(ISBN_t) + 2 * sizeof(Title_t), sizeof(Title_t));
+//  ISBN = std::string(src, sizeof(ISBN_t));
+//  title = std::string(src + sizeof(ISBN_t), sizeof(Title_t));
+//  author = std::string(src + sizeof(ISBN_t) + sizeof(Title_t), sizeof(Title_t));
+//  keywords = std::string(src + sizeof(ISBN_t) + 2 * sizeof(Title_t), sizeof(Title_t));
+  ISBN = external_memory::strNRead(src, sizeof(ISBN_t));
+  title = external_memory::strNRead(src + sizeof(ISBN_t), sizeof(Title_t));
+  author = external_memory::strNRead(src + sizeof(ISBN_t) + sizeof(Title_t), sizeof(Title_t));
+  keywords = external_memory::strNRead(src + sizeof(ISBN_t) + 2 * sizeof(Title_t), sizeof(Title_t));
   price = *reinterpret_cast<const unsigned long long *>(src + sizeof(ISBN_t) + 3 * sizeof(Title_t));
   quantity =
       *reinterpret_cast<const unsigned int *>(src + sizeof(ISBN_t) + 3 * sizeof(Title_t) + sizeof(unsigned long long));
@@ -106,7 +110,9 @@ kExceptionType BookSystem::modify(unsigned int id, const Book &old, const Book &
   return kExceptionType::K_SUCCESS;
 }
 BookSystem::SearchResult BookSystem::searchByISBN(const std::string &ISBN) {
-  return {std::vector<Book>{get(find(ISBN))}};
+  unsigned int id = find(ISBN);
+  if (!id) return {};
+  return {std::vector<Book>{get(id)}};
 }
 BookSystem::SearchResult BookSystem::searchByTitle(const std::string &title) {
   SearchResult result;

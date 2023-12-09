@@ -13,6 +13,9 @@ void BookStore::initialize(bool force_reset) {
   book_system_.initialize(reset);
   user_system_.initialize(reset);
   finance_log_.initialize(reset);
+  if (reset) {
+    user_system_.useradd("root", "sjtu", "root", 7); // add a root user
+  }
 }
 kExceptionType BookStore::login(const std::string &user_id, const std::string &password) {
   if (!validator::isValidUserID(user_id)) return kExceptionType::K_INVALID_PARAMETER;
@@ -41,7 +44,7 @@ kExceptionType BookStore::customerUseradd(const std::string &user_id,
   if (!validator::isValidPassword(password)) return kExceptionType::K_INVALID_PARAMETER;
   if (!validator::isValidUserName(name)) return kExceptionType::K_INVALID_PARAMETER;
   // this command does not require privilege check
-  return useradd(user_id, password, name, 1);
+  return user_system_.useradd(user_id, password, name, 1);
 }
 kExceptionType BookStore::passwd(const std::string &user_id,
                                  const std::string &new_password,
@@ -76,8 +79,7 @@ kExceptionType BookStore::select(const std::string &ISBN) {
   if (!validator::isValidISBN(ISBN)) return kExceptionType::K_INVALID_PARAMETER;
   if (user_system_.getPrivilege() < 3)
     return kExceptionType::K_PERMISSION_DENIED; // privilege check: the privilege of the current user must be greater than 3
-  auto id = book_system_.find(ISBN);
-  if (!id) return kExceptionType::K_BOOK_NOT_FOUND;
+  auto id = book_system_.select(ISBN);
   return user_system_.select(id);
 }
 kExceptionType BookStore::modify(Book &&new_book) {
@@ -87,9 +89,9 @@ kExceptionType BookStore::modify(Book &&new_book) {
   if (!selected_id) return kExceptionType::K_NO_SELECTED_BOOK;
   Book old_book = book_system_.get(selected_id);
   if (new_book.ISBN.empty()) {
-    if (!validator::isValidISBN(new_book.ISBN)) return kExceptionType::K_INVALID_PARAMETER;
     new_book.ISBN = old_book.ISBN;
   } else {
+    if (!validator::isValidISBN(new_book.ISBN)) return kExceptionType::K_INVALID_PARAMETER;
     if (new_book.ISBN == old_book.ISBN) return kExceptionType::K_SAME_ISBN;
   }
   if (new_book.title.empty()) {
@@ -114,6 +116,7 @@ kExceptionType BookStore::modify(Book &&new_book) {
   return book_system_.modify(selected_id, old_book, new_book);
 }
 kExceptionType BookStore::import_(unsigned int quantity, unsigned long long int cost) {
+  if (!validator::isValidQuantity(quantity)) return kExceptionType::K_INVALID_PARAMETER;
   if (user_system_.getPrivilege() < 3)
     return kExceptionType::K_PERMISSION_DENIED; // privilege check: the privilege of the current user must be greater than 3
   auto selected_id = user_system_.getSelectedId();
@@ -121,11 +124,12 @@ kExceptionType BookStore::import_(unsigned int quantity, unsigned long long int 
   Book book = book_system_.get(selected_id);
   Book new_book = book;
   new_book.quantity += quantity;
-  finance_log_.log(-cost);
+  finance_log_.log(-static_cast<long long>(cost));
   return book_system_.modify(selected_id, book, new_book);
 }
 std::pair<kExceptionType, unsigned long long> BookStore::purchase(const std::string &ISBN, unsigned int quantity) {
   if (!validator::isValidISBN(ISBN)) return {kExceptionType::K_INVALID_PARAMETER, 0};
+  if (!validator::isValidQuantity(quantity)) return {kExceptionType::K_INVALID_PARAMETER, 0};
   if (user_system_.getPrivilege() < 1)
     return {kExceptionType::K_PERMISSION_DENIED,
             0}; // privilege check: the privilege of the current user must be greater than 1

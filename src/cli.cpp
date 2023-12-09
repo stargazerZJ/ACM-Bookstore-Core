@@ -11,8 +11,11 @@ void BookStoreCLI::initialize(bool force_reset) {
 }
 void BookStoreCLI::run() {
   std::string line;
+  unsigned int line_number = 0;
   while (std::getline(is, line)) {
+    ++line_number;
     Command command(line);
+    std::cerr << "Running command" << std::setw(3) << line_number << ": " << line << endl; // for debug
     const std::string &name = command.getName();
     const Args &args = command.getArgs();
     if (name.empty()) continue;
@@ -49,8 +52,13 @@ void BookStoreCLI::run() {
 void BookStoreCLI::runCommand(const BookStoreCLI::Args &args, Func func) {
   kExceptionType ret = (this->*func)(args);
   if (ret != kExceptionType::K_SUCCESS) {
-    os << "Invalid!" << endl;
+    os << "Invalid" << endl;
+    // for debug
+    std::cerr << "Error: " << exceptionTypeToString(ret) << endl;
   }
+  // for debug
+  os.flush();
+  std::cerr << exceptionTypeToString(ret) << endl;
 }
 kExceptionType BookStoreCLI::su(const BookStoreCLI::Args &args) {
   if (args.empty() || args.size() > 2) return kExceptionType::K_INVALID_PARAMETER;
@@ -104,11 +112,11 @@ kExceptionType BookStoreCLI::show(const BookStoreCLI::Args &args) {
     } else if (flag.getFlag() == "author") {
       auto result = Command::removeQuotationMarks(flag.getValue());
       if (result.first != kExceptionType::K_SUCCESS) return result.first;
-      params.author = flag.getValue();
+      params.author = result.second;
     } else if (flag.getFlag() == "keyword") {
       auto result = Command::removeQuotationMarks(flag.getValue());
       if (result.first != kExceptionType::K_SUCCESS) return result.first;
-      params.keywords = flag.getValue();
+      params.keywords = result.second;
     } else {
       return kExceptionType::K_INVALID_PARAMETER;
     }
@@ -120,6 +128,7 @@ kExceptionType BookStoreCLI::show(const BookStoreCLI::Args &args) {
        << printMoney(book.price) << "\t"
        << book.quantity << endl;
   }
+  if (result.second.empty()) os << endl;
   return kExceptionType::K_SUCCESS;
 }
 kExceptionType BookStoreCLI::buy(const BookStoreCLI::Args &args) {
@@ -160,12 +169,12 @@ kExceptionType BookStoreCLI::modify(const BookStoreCLI::Args &args) {
       if (!new_book.author.empty()) return kExceptionType::K_INVALID_PARAMETER;
       auto result = Command::removeQuotationMarks(flag.getValue());
       if (result.first != kExceptionType::K_SUCCESS) return result.first;
-      new_book.author = flag.getValue();
+      new_book.author = result.second;
     } else if (flag.getFlag() == "keyword") {
       if (!new_book.keywords.empty()) return kExceptionType::K_INVALID_PARAMETER;
       auto result = Command::removeQuotationMarks(flag.getValue());
       if (result.first != kExceptionType::K_SUCCESS) return result.first;
-      new_book.keywords = flag.getValue();
+      new_book.keywords = result.second;
     } else if (flag.getFlag() == "price") {
       if (new_book.price != -1) return kExceptionType::K_INVALID_PARAMETER;
       auto result = Command::parseMoney(flag.getValue());
@@ -193,10 +202,11 @@ kExceptionType BookStoreCLI::import_(const BookStoreCLI::Args &args) {
   return book_store_.import_(quantity, cost);
 }
 kExceptionType BookStoreCLI::showFinance(const BookStoreCLI::Args &args) {
-  if (args.size() > 1) return kExceptionType::K_INVALID_PARAMETER;
+  // args[0] is "finance"
+  if (args.empty() || args.size() > 2) return kExceptionType::K_INVALID_PARAMETER;
   FinanceRecord record;
-  if (!args.empty()) {
-    auto ret = Command::parseUnsignedInt(args[0]);
+  if (args.size() == 2) {
+    auto ret = Command::parseUnsignedInt(args[1]);
     if (ret.first != kExceptionType::K_SUCCESS) return ret.first;
     auto result = book_store_.showFinance(ret.second);
     if (result.first != kExceptionType::K_SUCCESS) return result.first;
