@@ -6,6 +6,8 @@
 #define BOOKSTORE_SRC_CLI_H_
 
 #include "bookstore.h"
+#include "validator.h"
+#include "parser.h"
 
 class BookStoreCLI {
  private:
