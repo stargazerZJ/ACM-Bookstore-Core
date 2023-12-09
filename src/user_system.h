@@ -163,6 +163,7 @@ class UserSystem {
   std::string getUserName() const;
   /**
    * @brief Get the ID of the book selected by the current user
+   * @details If no user is logged in, or the current user has not selected any book, return 0.
    * @return unsigned int The ID of the book
    */
   unsigned int getSelectedId() const;
@@ -171,7 +172,7 @@ class UserSystem {
    * @param id The ID of the book
    * @attention No privilege check is performed here.
    */
-  void select(unsigned int id);
+  kExceptionType select(unsigned int id);
 };
 
 #endif //BOOKSTORE_SRC_USER_SYSTEM_H_

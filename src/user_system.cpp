@@ -21,10 +21,10 @@ unsigned int UserSystem::find(const std::string &user_id) {
 User UserSystem::get(unsigned int id) {
   return user_list_.get(id);
 }
-const User & UserSystem::current_user() const {
+const User &UserSystem::current_user() const {
   return login_stack_.back();
 }
-User & UserSystem::current_user() {
+User &UserSystem::current_user() {
   return login_stack_.back();
 }
 bool UserSystem::isLoggedIn(const std::string &user_id) const {
@@ -104,6 +104,8 @@ std::string UserSystem::getUserName() const {
 unsigned int UserSystem::getSelectedId() const {
   return current_user().selected_id;
 }
-void UserSystem::select(unsigned int id) {
+kExceptionType UserSystem::select(unsigned int id) {
+  if (!isLoggedIn()) return kExceptionType::K_NO_LOGIN_USER;
   current_user().selected_id = id;
+  return kExceptionType::K_SUCCESS;
 }

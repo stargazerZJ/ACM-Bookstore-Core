@@ -19,6 +19,8 @@ enum class kExceptionType {
   K_USER_IS_LOGGED_IN,
   K_BOOK_NOT_FOUND,
   K_NO_SELECTED_BOOK,
+  K_NOT_ENOUGH_INVENTORY,
+  K_SAME_ISBN,
   K_DUPLICATED_ISBN,
   K_DUPLICATED_KEYWORDS,
   K_NOT_ENOUGH_LOGS
@@ -40,6 +42,7 @@ class FinanceRecord {
   [[nodiscard]] unsigned long long int expenditure_sum() const { return expenditure_sum_; }
   [[nodiscard]] unsigned long long int balance() const { return income_sum_ - expenditure_sum_; }
   FinanceRecord operator-(const FinanceRecord &rhs) const;
+  [[nodiscard]] bool valid() const { return income_sum_ != -1ull && expenditure_sum_ != -1ull; }
   /// @brief Log a transaction
   /// @param money The amount of money
   /// @details If `money` is positive, it is regarded as income, otherwise it is regarded as expenditure.

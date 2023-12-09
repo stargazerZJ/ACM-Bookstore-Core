@@ -27,7 +27,7 @@ struct Book {
   std::string title; // the title of the book
   std::string author; // the author of the book
   std::string keywords; // multiple keywords are separated by '|'
-  unsigned int price = 0; // in cents
+  unsigned int price = 0; // in cents TODO: price may be 0, and may be greater than INT_MAX
   unsigned int quantity = 0; // the number of copies of the book in the store
   /**
    * @brief Construct a new Book object
