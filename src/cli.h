@@ -58,7 +58,7 @@ class BookStoreCLI {
   /// \details `modify (-ISBN=[ISBN]|-name="[BookName]"|-author="[Author]"|-keyword="[Keyword]"|-price=[Price])+`
   kExceptionType modify(const Args &args);
   /// \brief Import books
-  /// \details `import [Quantity]`
+  /// \details `import [Quantity] [TotalCost]`
   kExceptionType import_(const Args &args);
   /// \brief Show the finance log
   /// \details `show finance ([Count])?`

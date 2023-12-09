@@ -116,7 +116,8 @@ kExceptionType BookStoreCLI::show(const BookStoreCLI::Args &args) {
   auto result = book_store_.search(params);
   if (result.first != kExceptionType::K_SUCCESS) return result.first;
   for (const auto &book : result.second) {
-    os << book.ISBN << "\t" << book.title << "\t" << book.author << "\t" << book.keywords << "\t" << printMoney(book.price) << "\t"
+    os << book.ISBN << "\t" << book.title << "\t" << book.author << "\t" << book.keywords << "\t"
+       << printMoney(book.price) << "\t"
        << book.quantity << endl;
   }
   return kExceptionType::K_SUCCESS;
@@ -176,10 +177,19 @@ kExceptionType BookStoreCLI::modify(const BookStoreCLI::Args &args) {
   return book_store_.modify(std::move(new_book));
 }
 kExceptionType BookStoreCLI::import_(const BookStoreCLI::Args &args) {
-  if (args.size() != 1) return kExceptionType::K_INVALID_PARAMETER;
-  auto ret = Command::parseUnsignedInt(args[0]);
-  if (ret.first != kExceptionType::K_SUCCESS) return ret.first;
-  auto result = book_store_.import_(ret.second);
+  if (args.size() != 2) return kExceptionType::K_INVALID_PARAMETER;
+  unsigned long long int quantity, cost;
+  {
+    auto ret = Command::parseUnsignedInt(args[0]);
+    if (ret.first != kExceptionType::K_SUCCESS) return ret.first;
+    quantity = ret.second;
+  }
+  {
+    auto ret = Command::parseMoney(args[1]);
+    if (ret.first != kExceptionType::K_SUCCESS) return ret.first;
+    cost = ret.second;
+  }
+  auto result = book_store_.import_(quantity, cost);
   if (result.first != kExceptionType::K_SUCCESS) return result.first;
   os << printMoney(result.second) << endl;
 }
