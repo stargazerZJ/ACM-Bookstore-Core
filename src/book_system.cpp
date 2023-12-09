@@ -9,16 +9,18 @@ void Book::toBytes(char *dest) const {
   std::strncpy(dest + sizeof(ISBN_t), title.c_str(), sizeof(Title_t));
   std::strncpy(dest + sizeof(ISBN_t) + sizeof(Title_t), author.c_str(), sizeof(Title_t));
   std::strncpy(dest + sizeof(ISBN_t) + 2 * sizeof(Title_t), keywords.c_str(), sizeof(Title_t));
-  *reinterpret_cast<unsigned int *>(dest + sizeof(ISBN_t) + 3 * sizeof(Title_t)) = price;
-  *reinterpret_cast<unsigned int *>(dest + sizeof(ISBN_t) + 3 * sizeof(Title_t) + sizeof(unsigned int)) = quantity;
+  *reinterpret_cast<unsigned long long *>(dest + sizeof(ISBN_t) + 3 * sizeof(Title_t)) = price;
+  *reinterpret_cast<unsigned int *>(dest + sizeof(ISBN_t) + 3 * sizeof(Title_t) + sizeof(unsigned long long)) =
+      quantity;
 }
 void Book::fromBytes(const char *src) {
   ISBN = std::string(src, sizeof(ISBN_t));
   title = std::string(src + sizeof(ISBN_t), sizeof(Title_t));
   author = std::string(src + sizeof(ISBN_t) + sizeof(Title_t), sizeof(Title_t));
   keywords = std::string(src + sizeof(ISBN_t) + 2 * sizeof(Title_t), sizeof(Title_t));
-  price = *reinterpret_cast<const unsigned int *>(src + sizeof(ISBN_t) + 3 * sizeof(Title_t));
-  quantity = *reinterpret_cast<const unsigned int *>(src + sizeof(ISBN_t) + 3 * sizeof(Title_t) + sizeof(unsigned int));
+  price = *reinterpret_cast<const unsigned long long *>(src + sizeof(ISBN_t) + 3 * sizeof(Title_t));
+  quantity =
+      *reinterpret_cast<const unsigned int *>(src + sizeof(ISBN_t) + 3 * sizeof(Title_t) + sizeof(unsigned long long));
 }
 Book::Book(const char *bytes) {
   fromBytes(bytes);

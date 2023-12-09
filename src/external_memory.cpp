@@ -12,7 +12,6 @@ void Array::initialize(bool reset) {
     file_.open(file_name_, std::ios::in | std::ios::out | std::ios::binary);
   }
   if (!file_.is_open()) {
-    //TODO: use custom exception
     throw std::runtime_error("Cannot open file " + file_name_);
   }
   file_.seekg(0, std::ios::end);
@@ -119,7 +118,6 @@ void Pages::initialize(bool reset) {
   }
   cache_index_ = 0;
   if (!file_.is_open()) {
-    //TODO: use custom exception
     throw std::runtime_error("Cannot open file " + file_name_);
   }
 }

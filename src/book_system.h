@@ -27,7 +27,7 @@ struct Book {
   std::string title; // the title of the book
   std::string author; // the author of the book
   std::string keywords; // multiple keywords are separated by '|'
-  unsigned int price = 0; // in cents TODO: price may be 0, and may be greater than INT_MAX
+  unsigned long long price = 0; // in cents
   unsigned int quantity = 0; // the number of copies of the book in the store
   /**
    * @brief Construct a new Book object
@@ -44,7 +44,7 @@ struct Book {
    * @param quantity The quantity of the book.
    */
   explicit Book(std::string ISBN, std::string title = "", std::string author = "", std::string keywords = "",
-                unsigned int price = 0, unsigned int quantity = 0)
+                unsigned long long price = 0, unsigned int quantity = 0)
       : ISBN(std::move(ISBN)), title(std::move(title)), author(std::move(author)), keywords(std::move(keywords)),
         price(price), quantity(quantity) {}
   /**
@@ -56,7 +56,7 @@ struct Book {
    * @brief Get the byte size of a Book object when stored in external memory
    */
   static constexpr unsigned int byte_size() {
-    return sizeof(ISBN_t) + 3 * sizeof(Title_t) + 2 * sizeof(unsigned int);
+    return sizeof(ISBN_t) + 3 * sizeof(Title_t) + sizeof(unsigned long long)+ sizeof(unsigned int);
   }
   /**
    * @brief Convert a Book object to bytes

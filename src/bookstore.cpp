@@ -108,7 +108,7 @@ kExceptionType BookStore::modify(Book &&new_book) {
     auto result = Book::regularizeKeywords(new_book.keywords);
     if (result != kExceptionType::K_SUCCESS) return result;
   }
-  if (new_book.price == 0) {
+  if (new_book.price == -1) {
     new_book.price = old_book.price;
   }
   new_book.quantity = old_book.quantity; // the quantity cannot be modified by this command
@@ -137,7 +137,7 @@ std::pair<kExceptionType, unsigned long long> BookStore::purchase(const std::str
   Book new_book = book;
   new_book.quantity -= quantity;
   finance_log_.log(static_cast<long long>(book.price) * quantity);
-  return {book_system_.modify(id, book, new_book), static_cast<unsigned long long>(book.price) * quantity};
+  return {book_system_.modify(id, book, new_book), book.price * quantity};
 }
 std::pair<kExceptionType, FinanceRecord> BookStore::showFinance(unsigned int count) {
   if (user_system_.getPrivilege() < 7)

@@ -116,7 +116,7 @@ kExceptionType BookStoreCLI::show(const BookStoreCLI::Args &args) {
   auto result = book_store_.search(params);
   if (result.first != kExceptionType::K_SUCCESS) return result.first;
   for (const auto &book : result.second) {
-    os << book.ISBN << "\t" << book.title << "\t" << book.author << "\t" << book.keywords << "\t" << book.price << "\t"
+    os << book.ISBN << "\t" << book.title << "\t" << book.author << "\t" << book.keywords << "\t" << printMoney(book.price) << "\t"
        << book.quantity << endl;
   }
   return kExceptionType::K_SUCCESS;
