@@ -23,7 +23,7 @@ enum class kExceptionType {
   K_SAME_ISBN,
   K_DUPLICATED_ISBN,
   K_DUPLICATED_KEYWORDS,
-  K_NOT_ENOUGH_LOGS
+  K_NOT_ENOUGH_RECORDS
 };
 
 /// @brief The finance record

@@ -6,7 +6,7 @@
 void BookStore::initialize(bool force_reset) {
   bool reset = force_reset;
   if (!force_reset) {
-    std::ifstream file(file_path_ + "_data_data"); // a file that belongs to the `Vectors` class
+    std::ifstream file(file_path_ + "_data_data.db"); // a file that belongs to the `Vectors` class
     reset = !file.is_open(); // if the file does not exist or cannot be opened, reset the database
   }
   vectors_.initialize(reset);
@@ -28,9 +28,9 @@ kExceptionType BookStore::useradd(const std::string &user_id,
     return kExceptionType::K_PERMISSION_DENIED; // privilege check: the privilege of the current user must be greater than the privilege of the user to be added
   return user_system_.useradd(user_id, password, name, privilege);
 }
-kExceptionType BookStore::touristUseradd(const std::string &user_id,
-                                         const std::string &password,
-                                         const std::string &name) {
+kExceptionType BookStore::customerUseradd(const std::string &user_id,
+                                          const std::string &password,
+                                          const std::string &name) {
   // this command does not require privilege check
   return useradd(user_id, password, name, 1);
 }
@@ -114,7 +114,7 @@ std::pair<kExceptionType, FinanceRecord> BookStore::showFinance(int count) {
     return {kExceptionType::K_PERMISSION_DENIED,
             FinanceRecord()}; // privilege check: the privilege of the current user must be greater than 7
   auto finance_log = finance_log_.sum(count);
-  if (!finance_log.valid()) return {kExceptionType::K_NOT_ENOUGH_LOGS, FinanceRecord()};
+  if (!finance_log.valid()) return {kExceptionType::K_NOT_ENOUGH_RECORDS, FinanceRecord()};
   return {kExceptionType::K_SUCCESS, finance_log};
 }
 std::pair<kExceptionType, const FinanceRecord &> BookStore::showFinance() {
@@ -122,6 +122,6 @@ std::pair<kExceptionType, const FinanceRecord &> BookStore::showFinance() {
     return {kExceptionType::K_PERMISSION_DENIED,
             FinanceRecord()}; // privilege check: the privilege of the current user must be greater than 7
   auto finance_log = finance_log_.sum();
-  if (!finance_log.valid()) return {kExceptionType::K_NOT_ENOUGH_LOGS, FinanceRecord()};
+  if (!finance_log.valid()) return {kExceptionType::K_NOT_ENOUGH_RECORDS, FinanceRecord()};
   return {kExceptionType::K_SUCCESS, finance_log};
 }
