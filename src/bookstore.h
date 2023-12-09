@@ -12,44 +12,49 @@
 class BookStore {
  private:
   const std::string file_path_;
-  //TODO: define Vectors class here and pass it to BookSystem and UserSystem
+  external_memory::Vectors vectors_;
   BookSystem book_system_;
   UserSystem user_system_;
   FinanceLog finance_log_;
-  UserLog user_log_;
  public:
-  BookStore(std::string file_path = "");
+  explicit BookStore(std::string file_path = "bookstore") : file_path_(std::move(file_path)),
+                                                            vectors_(file_path_ + "_data"),
+                                                            book_system_(file_path_ + "book", vectors_),
+                                                            user_system_(file_path_ + "_user"),
+                                                            finance_log_(file_path_ + "_finance_log") {}
 
-  ~BookStore();
+  ~BookStore() = default;
 
   void initialize(bool force_reset = false);
 
-  bool login(const std::string &user_id, const std::string &password = "") const;
+  kExceptionType login(const std::string &user_id, const std::string &password = "");
 
-  bool logout();
+  kExceptionType logout();
 
-  bool useradd(const std::string &user_id, const std::string &password, const std::string &name, int privilege);
+  kExceptionType useradd(const std::string &user_id,
+                         const std::string &password,
+                         const std::string &name,
+                         int privilege);
+  kExceptionType touristUseradd(const std::string &user_id, const std::string &password, const std::string &name);
 
-  bool passwd(const std::string &user_id,
-              const std::string &new_password,
-              const std::string &old_password = "");
+  kExceptionType passwd(const std::string &user_id,
+                        const std::string &new_password,
+                        const std::string &old_password = "");
 
-  bool deluser(const std::string &user_id);
+  kExceptionType deluser(const std::string &user_id);
 
-  std::vector<Book> search(const Book &params) const;
+  std::pair<kExceptionType, std::vector<Book>> search(const Book &params);
 
-  bool select(const std::string &ISBN);
+  kExceptionType select(const std::string &ISBN);
 
-  bool modify(const Book &new_book);
+  kExceptionType modify(Book &&new_book);
 
-  bool import(
-  int quantity,
-  int cost
-  );
+  kExceptionType import_(int quantity, int cost);
 
-  const FinanceLog *GetFinanceLog() const;
+  std::pair<kExceptionType, unsigned long long> purchase(const std::string &ISBN, int quantity);
 
-  const UserLog *GetUserLog() const;
+  std::pair<kExceptionType, FinanceRecord> showFinance(int count);
+  std::pair<kExceptionType, const FinanceRecord &> showFinance();
 };
 
 #endif //BOOKSTORE_SRC_BOOKSTORE_H_
