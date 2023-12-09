@@ -12,7 +12,7 @@
 /**
  * @brief The Command class
  * @details The Command class is used to parse commands.
- * @details A command consists of a command and some arguments.
+ * @details A command consists of a name and some arguments.
  * @details A command must not occupy multiple lines.
  * @details The only delimiter of a command is space.
  * @details Multiple spaces are treated as one delimiter.
@@ -24,10 +24,10 @@
  */
 class Command {
  private:
-  std::string command; // the command
-  std::vector<std::string> args; // the arguments
-  explicit Command(std::string command, std::vector<std::string> args = {})
-      : command(std::move(command)), args(std::move(args)) {}
+  std::string name_; // the name of the command
+  std::vector<std::string> args_; // the arguments
+  explicit Command(std::string name, std::vector<std::string> args)
+      : name_(std::move(name)), args_(std::move(args)) {}
  public:
   class Flag {
     friend class Command;
@@ -38,14 +38,14 @@ class Command {
         : flag(std::move(flag)), value(std::move(value)) {}
    public:
     Flag() = default;
-    [[nodiscard]] const std::string &get_flag() const { return flag; }
-    [[nodiscard]] const std::string &get_value() const { return value; }
+    [[nodiscard]] const std::string &getFlag() const { return flag; }
+    [[nodiscard]] const std::string &getValue() const { return value; }
   };
   Command() = default;
   /// \brief Parse a command
   explicit Command(const std::string &line);
-  [[nodiscard]] const std::string &get_command() const { return command; }
-  [[nodiscard]] const std::vector<std::string> &get_args() const { return args; }
+  [[nodiscard]] const std::string &getName() const { return name_; }
+  [[nodiscard]] const std::vector<std::string> &getArgs() const { return args_; }
   /**
    * @brief Parse a flag
    * @details Parse a flag, e.g. '-ISBN=978-7-302-32998-2' (not quoted) or '-name="C++ Primer"' (quoted)
@@ -56,6 +56,7 @@ class Command {
    * @return If the flag is valid, the kExceptionType will be K_SUCCESS.
    */
   static std::pair<kExceptionType, Flag> parseFlag(const std::string &arg, bool quoted = false);
+  static std::pair<kExceptionType, std::string> removeQuotationMarks(const std::string &arg);
   /**
    * @brief Parse an unsigned int
    * @details Parse an unsigned int, e.g. '123'

@@ -7,6 +7,7 @@
 
 #include "book_system.h"
 #include "user_system.h"
+#include "validator.h"
 #include "log.h"
 
 /**
@@ -29,26 +30,25 @@
  * @details However, if the check involves two users, the privilege check will not be performed.
  * @details For example, `useradd` requires the privilege of the current user to be greater than the privilege of the user to be added.
  * @details This check is done by the `UserSystem` class.
- * @details This class also performs parameter checks if the check involves the information stored in the database.
- * @details For example, `select` checks whether the book exists.
+ * @details This class also performs parameter checks.
  * @attention `initialize` should be called before using this class.
  * @attention Parameter checks should be performed by the caller if the check does not involve the information stored in the database.
  * @attention For example, `BookName` should not contain '"', which should be checked by the caller.
  */
 class BookStore {
  private:
-  const std::string file_path_; // the path of the files storing the information of the bookstore
+  const std::string file_prefix_; // the prefix (including path) of the files storing the information of books
   external_memory::Vectors vectors_; // the vectors used by external memory, shared with other systems
   BookSystem book_system_; // the book system
   UserSystem user_system_; // the user system
   FinanceLog finance_log_; // the finance log
  public:
   /// \brief Construct a new BookStore object
-  explicit BookStore(std::string file_path = "bookstore") : file_path_(std::move(file_path)),
-                                                            vectors_(file_path_ + "_data"),
-                                                            book_system_(file_path_ + "book", vectors_),
-                                                            user_system_(file_path_ + "_user"),
-                                                            finance_log_(file_path_ + "_finance_log") {}
+  explicit BookStore(std::string file_prefix = "bookstore") : file_prefix_(std::move(file_prefix)),
+                                                              vectors_(file_prefix_ + "_data"),
+                                                              book_system_(file_prefix_ + "_book", vectors_),
+                                                              user_system_(file_prefix_ + "_user"),
+                                                              finance_log_(file_prefix_ + "_finance_log") {}
   /// \brief Destroy the BookStore object
   ~BookStore() = default;
   /**
@@ -94,7 +94,7 @@ class BookStore {
   kExceptionType useradd(const std::string &user_id,
                          const std::string &password,
                          const std::string &name,
-                         int privilege);
+                         unsigned int privilege);
   /**
    * @brief Add a new customer user
    * @details A customer user is a user with privilege 1.
@@ -164,7 +164,7 @@ class BookStore {
    * @return K_SUCCESS if import successfully
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 3
    */
-  kExceptionType import_(int quantity, int cost);
+  kExceptionType import_(unsigned int quantity, unsigned long long int cost);
   /**
    * @brief Purchase books
    * @param ISBN The ISBN of the book
@@ -175,7 +175,7 @@ class BookStore {
    * @return K_NOT_ENOUGH_INVENTORY if the inventory of the book is not enough
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 1
    */
-  std::pair<kExceptionType, unsigned long long> purchase(const std::string &ISBN, int quantity);
+  std::pair<kExceptionType, unsigned long long> purchase(const std::string &ISBN, unsigned int quantity);
   /**
    * @brief Show the finance log
    * @param count The number of records to show
@@ -184,7 +184,7 @@ class BookStore {
    * @return K_NOT_ENOUGH_RECORDS if the number of records is less than count
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 7
    */
-  std::pair<kExceptionType, FinanceRecord> showFinance(int count);
+  std::pair<kExceptionType, FinanceRecord> showFinance(unsigned int count);
   /**
    * @brief Show all the finance log
    * @return std::pair<kExceptionType, FinanceRecord>

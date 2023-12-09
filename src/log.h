@@ -38,8 +38,8 @@ class FinanceRecord {
   explicit FinanceRecord(const char *bytes) { fromBytes(bytes); }
   FinanceRecord(unsigned long long int income_sum, unsigned long long int expenditure_sum)
       : income_sum_(income_sum), expenditure_sum_(expenditure_sum) {}
-  [[nodiscard]] unsigned long long int income_sum() const { return income_sum_; }
-  [[nodiscard]] unsigned long long int expenditure_sum() const { return expenditure_sum_; }
+  [[nodiscard]] unsigned long long int income() const { return income_sum_; }
+  [[nodiscard]] unsigned long long int expenditure() const { return expenditure_sum_; }
   [[nodiscard]] unsigned long long int balance() const { return income_sum_ - expenditure_sum_; }
   FinanceRecord operator-(const FinanceRecord &rhs) const;
   [[nodiscard]] bool valid() const { return income_sum_ != -1ull && expenditure_sum_ != -1ull; }

@@ -13,10 +13,10 @@ Command::Command(const std::string &line) {
   std::istringstream iss(line);
   std::string token;
   while (std::getline(iss, token, ' ')) {
-    if (command.empty()) {
-      command = token;
+    if (name_.empty()) {
+      name_ = token;
     } else {
-      args.push_back(token);
+      args_.push_back(token);
     }
   }
 }
@@ -36,9 +36,9 @@ std::pair<kExceptionType, Command::Flag> Command::parseFlag(const std::string &a
     if (value.empty() || value.front() != '"' || value.back() != '"')
       return {kExceptionType::K_INVALID_PARAMETER, Command::Flag()};
     value = value.substr(1, value.size() - 2);
-    if (value.empty()) return {kExceptionType::K_INVALID_PARAMETER, Command::Flag()};
     if (value.find('"') != std::string::npos) return {kExceptionType::K_INVALID_PARAMETER, Command::Flag()};
   }
+  if (value.empty()) return {kExceptionType::K_INVALID_PARAMETER, Command::Flag()};
   return {kExceptionType::K_SUCCESS, Command::Flag(flag, value)};
 }
 std::pair<kExceptionType, unsigned int> Command::parseUnsignedInt(const std::string &arg) {
@@ -73,5 +73,12 @@ std::pair<kExceptionType, unsigned long long int> Command::parseMoney(const std:
   } catch (std::invalid_argument &) {
     return {kExceptionType::K_INVALID_PARAMETER, 0};
   }
+  return {kExceptionType::K_SUCCESS, value};
+}
+std::pair<kExceptionType, std::string> Command::removeQuotationMarks(const std::string &arg) {
+  /// remove quotation marks, e.g. '"C++ Primer"' -> 'C++ Primer'
+  if (arg.size() < 3 || arg.front() != '"' || arg.back() != '"') return {kExceptionType::K_INVALID_PARAMETER, ""};
+  std::string value = arg.substr(1, arg.size() - 2);
+  if (value.find('"') != std::string::npos) return {kExceptionType::K_INVALID_PARAMETER, ""};
   return {kExceptionType::K_SUCCESS, value};
 }

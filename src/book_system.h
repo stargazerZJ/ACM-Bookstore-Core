@@ -192,6 +192,7 @@ class BookSystem {
    * @details The result is sorted by ISBN.
    */
   [[nodiscard]] std::vector<Book> search(const Book &params);
+  //TODO: only allow searching by zero or one parameter
 };
 
 #endif //BOOKSTORE_SRC_BOOK_SYSTEM_H_
