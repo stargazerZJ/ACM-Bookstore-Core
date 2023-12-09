@@ -180,8 +180,19 @@ std::vector<Book> BookSystem::search(const Book &params) {
     result = searchByAuthor(params.author);
   } else if (!params.keywords.empty()) {
     result = searchByKeyword(params.keywords);
+  } else {
+    result = getAllBooks();
   }
-  return result.filter(params).sort().books;
+  return result.sort().books;
+}
+BookSystem::SearchResult BookSystem::getAllBooks() {
+  SearchResult result;
+  book_list_.cache();
+  result.books.reserve(book_list_.size());
+  for (unsigned int id = 1; id <= book_list_.size(); ++id) {
+    result.books.push_back(get(id));
+  }
+  return result;
 }
 BookSystem::SearchResult &BookSystem::SearchResult::filter(const Book &params) {
   std::erase_if(books, [&params](const Book &book) {

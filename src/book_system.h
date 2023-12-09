@@ -124,6 +124,7 @@ class BookSystem {
     SearchResult &sort(); // sort by ISBN
   };
 
+  SearchResult getAllBooks();
   SearchResult searchByISBN(const std::string &ISBN);
   SearchResult searchByTitle(const std::string &title); // Also removes the duplicated and erased items in title_to_id_
   SearchResult searchByAuthor(const std::string &author); // Also removes the duplicated and erased items in author_to_id_
