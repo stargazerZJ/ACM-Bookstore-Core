@@ -32,6 +32,8 @@ bool isValidAuthor(const std::string &author) {
 bool isValidKeyword(const std::string &keyword) {
   if (!isValidBookName(keyword)) return false;
   auto keywords_vec = Book::unpackKeywords(keyword);
+  if (keywords_vec.empty()) return false;
+  if (keywords_vec[0].empty()) return false; // If there is an empty keyword, it must be the first one
   if (std::unique(keywords_vec.begin(), keywords_vec.end()) != keywords_vec.end()) return false;
   return true;
 }
