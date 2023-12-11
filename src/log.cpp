@@ -60,5 +60,6 @@ std::string exceptionTypeToString(kExceptionType exception_type) {
     case kExceptionType::K_DUPLICATED_ISBN: return "Duplicated ISBN";
     case kExceptionType::K_DUPLICATED_KEYWORDS: return "Duplicated keywords";
     case kExceptionType::K_NOT_ENOUGH_RECORDS: return "Not enough records";
+    default: return "Unknown exception type";
   }
 }

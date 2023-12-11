@@ -48,7 +48,7 @@ kExceptionType UserSystem::login(const std::string &user_id, const std::string &
   if (!id) return kExceptionType::K_USER_NOT_FOUND;
   User user = get(id);
   if (password.empty()) {
-    if (getPrivilege() > user.privilege) return kExceptionType::K_PERMISSION_DENIED;
+    if (getPrivilege() < user.privilege) return kExceptionType::K_PERMISSION_DENIED;
   } else if (user.password != password) return kExceptionType::K_WRONG_PASSWORD;
   login_stack_.emplace_back(user);
   login_count_[user_id]++;
@@ -68,7 +68,7 @@ kExceptionType UserSystem::logout() {
 kExceptionType UserSystem::useradd(const std::string &user_id,
                                    const std::string &password,
                                    const std::string &name,
-                                   int privilege) {
+                                   unsigned int privilege) {
   auto &id = user_id_to_id_[user_id];
   if (id) return kExceptionType::K_USER_ALREADY_EXIST;
   id = user_list_.insert(User(user_id, password, name, privilege));

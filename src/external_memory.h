@@ -177,7 +177,7 @@ void List<Elem, recover_space>::setHead(unsigned int n, unsigned int value) {
   if (cached_) {
     *reinterpret_cast<unsigned int *>(cache_[n - 1].data) = value;
   } else {
-    file_.seekp(data_begin_ + (n - 1) * sizeof(unsigned int), std::ios::beg);
+    file_.seekp(data_begin_ + (n - 1) * byte_size_, std::ios::beg);
     file_.write(reinterpret_cast<char *>(&value), sizeof(unsigned int));
   }
 }
@@ -186,7 +186,7 @@ void List<Elem, recover_space>::getHead(unsigned int n, unsigned int &dest) {
   if (cached_) {
     dest = *reinterpret_cast<unsigned int *>(cache_[n - 1].data);
   } else {
-    file_.seekg(data_begin_ + (n - 1) * sizeof(unsigned int), std::ios::beg);
+    file_.seekg(data_begin_ + (n - 1) * byte_size_, std::ios::beg);
     file_.read(reinterpret_cast<char *>(&dest), sizeof(unsigned int));
   }
 }

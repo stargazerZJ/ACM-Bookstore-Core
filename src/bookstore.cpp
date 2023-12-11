@@ -117,6 +117,7 @@ kExceptionType BookStore::modify(Book &&new_book) {
 }
 kExceptionType BookStore::import_(unsigned int quantity, unsigned long long int cost) {
   if (!validator::isValidQuantity(quantity)) return kExceptionType::K_INVALID_PARAMETER;
+  if (cost == 0) return kExceptionType::K_INVALID_PARAMETER;
   if (user_system_.getPrivilege() < 3)
     return kExceptionType::K_PERMISSION_DENIED; // privilege check: the privilege of the current user must be greater than 3
   auto selected_id = user_system_.getSelectedId();

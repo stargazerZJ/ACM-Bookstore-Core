@@ -58,7 +58,7 @@ void BookStoreCLI::runCommand(const BookStoreCLI::Args &args, Func func) {
   }
   // for debug
   os.flush();
-  std::cerr << exceptionTypeToString(ret) << endl;
+  if(ret == kExceptionType::K_SUCCESS) std::cerr << exceptionTypeToString(ret) << endl;
 }
 kExceptionType BookStoreCLI::su(const BookStoreCLI::Args &args) {
   if (args.empty() || args.size() > 2) return kExceptionType::K_INVALID_PARAMETER;

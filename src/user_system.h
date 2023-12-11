@@ -115,7 +115,7 @@ class UserSystem {
   kExceptionType useradd(const std::string &user_id,
                          const std::string &password,
                          const std::string &name,
-                         int privilege);
+                         unsigned int privilege);
   /**
    * @brief Delete a user
    * @param user_id
