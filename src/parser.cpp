@@ -13,6 +13,7 @@ Command::Command(const std::string &line) {
   std::istringstream iss(line);
   std::string token;
   while (std::getline(iss, token, ' ')) {
+    if (token.empty()) continue;
     if (name_.empty()) {
       name_ = token;
     } else {
