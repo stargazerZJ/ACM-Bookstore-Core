@@ -15,7 +15,7 @@ void BookStoreCLI::run() {
   while (std::getline(is, line)) {
     ++line_number;
     Command command(line);
-    std::cerr << "Running command" << std::setw(3) << line_number << ": " << line << endl; // for debug
+//    std::cerr << "Running command" << std::setw(3) << line_number << ": " << line << endl; // for debug
     const std::string &name = command.getName();
     const Args &args = command.getArgs();
     if (name.empty()) continue;
@@ -54,11 +54,11 @@ void BookStoreCLI::runCommand(const BookStoreCLI::Args &args, Func func) {
   if (ret != kExceptionType::K_SUCCESS) {
     os << "Invalid" << endl;
     // for debug
-    std::cerr << "Error: " << exceptionTypeToString(ret) << endl;
+//    std::cerr << "Error: " << exceptionTypeToString(ret) << endl;
   }
   // for debug
-  os.flush();
-  if (ret == kExceptionType::K_SUCCESS) std::cerr << exceptionTypeToString(ret) << endl;
+//  os.flush();
+//  if (ret == kExceptionType::K_SUCCESS) std::cerr << exceptionTypeToString(ret) << endl;
 }
 kExceptionType BookStoreCLI::su(const BookStoreCLI::Args &args) {
   if (args.empty() || args.size() > 2) return kExceptionType::K_INVALID_PARAMETER;
