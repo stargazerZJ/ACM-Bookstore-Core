@@ -101,7 +101,7 @@ kExceptionType BookSystem::modify(unsigned int id, const Book &old, const Book &
       }
       if (old_it == old_keywords.end() || *old_it > *new_it) {
         keyword_to_id_.insert(*new_it, id);
-      } else {
+      } else { // *old_it == *new_it
         ++old_it;
       }
     }
