@@ -45,7 +45,7 @@ std::pair<kExceptionType, Command::Flag> Command::parseFlag(const std::string &a
 std::pair<kExceptionType, unsigned int> Command::parseUnsignedInt(const std::string &arg) {
   /// parse an unsigned int, e.g. '123'
   /// plus sign is not allowed
-  unsigned int value = 0;
+  unsigned long long value = 0;
   if (arg.size() > 10) return {kExceptionType::K_INVALID_PARAMETER, 0};
   if (!std::all_of(arg.begin(), arg.end(), [](char c) { return std::isdigit(c); })) {
     return {kExceptionType::K_INVALID_PARAMETER, 0};
@@ -56,6 +56,7 @@ std::pair<kExceptionType, unsigned int> Command::parseUnsignedInt(const std::str
   } catch (std::out_of_range &) {
     return {kExceptionType::K_INVALID_PARAMETER, 0};
   }
+  if (value > 0x7fffffff) return {kExceptionType::K_INVALID_PARAMETER, 0};
   return {kExceptionType::K_SUCCESS, value};
 }
 std::pair<kExceptionType, unsigned long long int> Command::parseMoney(const std::string &arg) {
@@ -67,6 +68,7 @@ std::pair<kExceptionType, unsigned long long int> Command::parseMoney(const std:
   if (!std::all_of(arg.begin(), arg.end(), [](char c) { return std::isdigit(c) || c == '.'; })) {
     return {kExceptionType::K_INVALID_PARAMETER, 0};
   }
+  if (std::count(arg.begin(), arg.end(), '.') > 1) return {kExceptionType::K_INVALID_PARAMETER, 0};
   try {
     value = static_cast<unsigned long long int>(std::round(std::stold(arg) * 100));
   } catch (std::out_of_range &) {
