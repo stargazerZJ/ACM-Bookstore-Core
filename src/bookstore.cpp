@@ -52,6 +52,8 @@ kExceptionType BookStore::passwd(const std::string &user_id,
   if (!validator::isValidUserID(user_id)) return kExceptionType::K_INVALID_PARAMETER;
   if (!validator::isValidPassword(new_password)) return kExceptionType::K_INVALID_PARAMETER;
   if (!old_password.empty() && !validator::isValidPassword(old_password)) return kExceptionType::K_INVALID_PARAMETER;
+  if (user_system_.getPrivilege() < 1)
+    return kExceptionType::K_PERMISSION_DENIED; // privilege check: the privilege of the current user must be greater than 1
   if (old_password.empty() && user_system_.getPrivilege() < 7)
     return kExceptionType::K_PERMISSION_DENIED; // privilege check: if the old password is not provided, the privilege of the current user must be 7
   return user_system_.passwd(user_id, new_password, old_password);
