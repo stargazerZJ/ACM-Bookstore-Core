@@ -58,7 +58,7 @@ void BookStoreCLI::runCommand(const BookStoreCLI::Args &args, Func func) {
   }
   // for debug
   os.flush();
-  if(ret == kExceptionType::K_SUCCESS) std::cerr << exceptionTypeToString(ret) << endl;
+  if (ret == kExceptionType::K_SUCCESS) std::cerr << exceptionTypeToString(ret) << endl;
 }
 kExceptionType BookStoreCLI::su(const BookStoreCLI::Args &args) {
   if (args.empty() || args.size() > 2) return kExceptionType::K_INVALID_PARAMETER;
@@ -211,12 +211,16 @@ kExceptionType BookStoreCLI::showFinance(const BookStoreCLI::Args &args) {
     auto result = book_store_.showFinance(ret.second);
     if (result.first != kExceptionType::K_SUCCESS) return result.first;
     record = result.second;
+    if (ret.second != 0)
+      os << "+ " << printMoney(record.income()) << " - " << printMoney(record.expenditure()) << endl;
+    else
+      os << endl;
   } else {
     auto result = book_store_.showFinance();
     if (result.first != kExceptionType::K_SUCCESS) return result.first;
     record = result.second;
+    os << "+ " << printMoney(record.income()) << " - " << printMoney(record.expenditure()) << endl;
   }
-  os << "+ " << printMoney(record.income()) << " - " << printMoney(record.expenditure()) << endl;
   return kExceptionType::K_SUCCESS;
 }
 kExceptionType BookStoreCLI::invalidCommand(const BookStoreCLI::Args &args) {
