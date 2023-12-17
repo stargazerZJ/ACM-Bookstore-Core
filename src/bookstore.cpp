@@ -153,7 +153,7 @@ std::pair<kExceptionType, FinanceRecord> BookStore::showFinance(unsigned int cou
   if (!finance_log.valid()) return {kExceptionType::K_NOT_ENOUGH_RECORDS, FinanceRecord()};
   return {kExceptionType::K_SUCCESS, finance_log};
 }
-std::pair<kExceptionType, const FinanceRecord &> BookStore::showFinance() {
+std::pair<kExceptionType, FinanceRecord> BookStore::showFinance() {
   if (user_system_.getPrivilege() < 7)
     return {kExceptionType::K_PERMISSION_DENIED,
             FinanceRecord()}; // privilege check: the privilege of the current user must be greater than 7

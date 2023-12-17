@@ -201,7 +201,7 @@ class BookStore {
    * @return K_SUCCESS if show successfully. The second element is the finance record.
    * @return K_PERMISSION_DENIED if the privilege of the current user is less than 7
    */
-  std::pair<kExceptionType, const FinanceRecord &> showFinance();
+  std::pair<kExceptionType, FinanceRecord> showFinance();
 };
 
 #endif //BOOKSTORE_SRC_BOOKSTORE_H_

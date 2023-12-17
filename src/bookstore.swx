@@ -1,0 +1,19 @@
+
+%module bookstore
+%{
+#include "bookstore.h"
+%}
+
+%include "stl.i"
+%include "bookstore.h"
+%include "log.h"
+%include "book_system.h"
+/* instantiate std::pair<kExceptionType, unsigned long long> */
+%template(PairExceptionULL) std::pair<kExceptionType, unsigned long long>;
+/* instantiate std::vector<Book> */
+%template(VectorBook) std::vector<Book>;
+/* instantiate std::pair<kExceptionType, std::vector<Book>> */
+%template(PairExceptionVectorBook) std::pair<kExceptionType, std::vector<Book>>;
+/* instantiate std::pair<kExceptionType, FinanceRecord> */
+%template(PairExceptionFinanceRecord) std::pair<kExceptionType, FinanceRecord>;
+
