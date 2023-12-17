@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.22)
+project(Bookstore)
+
+if(DEFINED ENV{LOCAL})
+    add_definitions(-DLOCAL)
+endif()
+
+set(CMAKE_CXX_STANDARD 20)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g")
+
+file(GLOB_RECURSE main_src src/*.cpp )
+
+add_executable(code ${main_src})
+
+# SWIG setup
+find_package(SWIG REQUIRED)
+include(${SWIG_USE_FILE})
+
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_PATH})
+
+# Set the location of your SWIG interface file
+set(SWIG_INTERFACE_FILE "swig/bookstore.i")
+# Set the output directory for generated files (Python module and wrapper C++ code)
+#set(SWIG_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/swig)
+
+# Set the programming language for SWIG (Python in this case)
+set_property(SOURCE ${SWIG_INTERFACE_FILE} PROPERTY CPLUSPLUS ON)
+#set_property(SOURCE ${SWIG_INTERFACE_FILE} PROPERTY SWIG_MODULE_NAME bookstore)
+swig_add_library(bookstore TYPE SHARED LANGUAGE python SOURCES ${SWIG_INTERFACE_FILE} ${main_src})
+#target_include_directories(bookstore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# Link your code with SWIG-generated wrapper
+#target_link_libraries(bookstore PRIVATE your_other_libs)
+
+# Link the Python libraries
+swig_link_libraries(bookstore ${PYTHON_LIBRARIES})
+
+# Ensure the generated Python module is placed in the right location
+set_target_properties(bookstore PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python)
+
+# Add a custom target to build the SWIG module
+add_custom_target(python_bindings DEPENDS bookstore)
